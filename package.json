@@ -1,5 +1,5 @@
 {
-  "name": "messagemeserver",
+  "name": "guftguserver",
   "version": "0.0.1",
   "description": "Backend of MessageMe chat app, which handles all requests and messages and also users",
   "main": "index.js",
