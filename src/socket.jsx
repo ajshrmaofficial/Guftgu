@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const URL = "http://192.168.2.11:3000"
+const URL = import.meta.env.VITE_SERVER_IP
 
 const chatSocket = io(URL + '/chat', {autoConnect: false})
 
