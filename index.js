@@ -1,7 +1,8 @@
 // const  server = require('express')();
+require('dotenv').config()
 const io = require('socket.io')({
     cors:{
-        origin: ["http://localhost:5173", "http://192.168.2.11:5173"]
+        origin: process.env.FRONTEND_IP
     }})
 
 // const cors = require('cors');
