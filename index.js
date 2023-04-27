@@ -1,21 +1,53 @@
-// const  server = require('express')();
 require('dotenv').config()
-const io = require('socket.io')({
-    cors:{
-        origin: process.env.FRONTEND_IP
-    }})
+const express = require('express')
+const  server = express()
+const http = require('http')
+const httpServer = http.createServer(server)
+const cors = require('cors');
+const cookieParser = require('cookie-parser')
+const { sessionMiddleware, redisClient } = require('./sessionManager')
+const authRouter = require('./authRouter')
 
-// const cors = require('cors');
-// server.use(express.json());
-// server.use(express.urlencoded({ extended: true }));
-// server.use(cors({
-//     origin: "http://localhost:5173"
-// }));
+const corsConfig = {
+    origin: process.env.FRONTEND_IP,
+    credentials: true
+}
 
+const io = require('socket.io')(httpServer, {
+    cors: corsConfig
+})
+
+async function connectRedis() {
+    await redisClient.connect()
+}
+connectRedis()
+
+server.use(cors(corsConfig));
+
+server.use(express.json());
+server.use(express.urlencoded({ extended: true }));
+server.use(cookieParser())
+server.use(sessionMiddleware)
+server.use('/auth', authRouter)
+io.engine.use(sessionMiddleware)
+
+redisClient.on('connect', ()=>{
+    console.log('connected to redis')
+})
+
+redisClient.on('error', (err)=>{
+    console.log('Could not establish connection to redis: ' + err)
+})
+
+server.get('/check', (req, res)=>{
+    console.log(req.sessionID)
+    res.send(req.sessionID)
+})
 
 chatNamespace = io.of('/chat');
 
 chatNamespace.on('connection', (socket)=>{
+    console.log('Socket.io sessionID: '+JSON.stringify(socket.request.sessionID))
     console.log(`A user connected to chat namespace: ${socket.id} ${socket.username}`)
     socket.on('chat message', ({message, fromID, fromUsername})=>{
         console.log(`Recieved message from ${socket.username}: `, message)
@@ -32,8 +64,6 @@ chatNamespace.use((socket, next)=>{
     next()
 })
 
-io.listen(3000)
-
-// server.listen(3000, ()=>{
-//     console.log("Server is running on port 3000")
-// })
+httpServer.listen(process.env.PORT, ()=>{
+    console.log("Server is running on port 3000")
+})
