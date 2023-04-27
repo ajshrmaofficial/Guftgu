@@ -1,10 +1,16 @@
 import { useContext, useEffect, useState } from "react";
-import { UserData } from "./Context";
-import chatSocket from "../socket";
+import axios from 'axios'
+import { UserContext } from "../utility/Context";
+import chatSocket from "../utility/socket";
 import "../css/App.css";
 
-const Broadcaster = () => {
-  const user = useContext(UserData)
+const client = axios.create({
+  baseURL: 'http://localhost:3000',
+  withCredentials: true,
+})
+
+const Guftgu = () => {
+  const user = useContext(UserContext)
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -45,4 +51,4 @@ const Broadcaster = () => {
   );
 };
 
-export default Broadcaster;
+export default Guftgu;
