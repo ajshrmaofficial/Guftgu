@@ -23,22 +23,24 @@ const router = createBrowserRouter([
             <Dashboard />
           </Protected>
         ),
-      },
-      {
-        path: "/guftgu",
-        element: (
-          <Protected>
-            <Guftgu />
-          </Protected>
-        ),
-      },
-      {
-        path: "/mehfil",
-        element: (
-          <Protected>
-            <Mehfil />
-          </Protected>
-        ),
+        children: [
+          {
+            path: "/guftgu",
+            element: (
+              <Protected>
+                <Guftgu />
+              </Protected>
+            ),
+          },
+          {
+            path: "/mehfil",
+            element: (
+              <Protected>
+                <Mehfil />
+              </Protected>
+            ),
+          },
+        ]
       },
       {
         path: "/",
