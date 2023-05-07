@@ -10,4 +10,12 @@ chatSocket.onAny((event)=>{
     console.log(`Log from chatSocket(event): ${event}`)
 })
 
-export default chatSocket
+function setSocketUsername(username){
+    chatSocket.auth = username
+}
+
+function connectChatSocket(){
+    chatSocket.connect()
+}
+
+export {chatSocket, setSocketUsername, connectChatSocket}
