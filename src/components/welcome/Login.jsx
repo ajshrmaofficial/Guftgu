@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import chatSocket from "../../utility/socket";
+import {setSocketUsername, connectChatSocket} from "../../utility/socket";
 import authContext from "../../utility/authContext";
 import server from "../../utility/serverConfig"
 import { useNavigate } from "react-router-dom";
@@ -29,10 +29,10 @@ const Login = () => {
     const submit = async(e) => {
       e.preventDefault();
       const response = await loginUser({username, passwd})
-      console.log(response)
       if(response?.data.isAuthenticated){
-        chatSocket.auth = {username}
-        chatSocket.connect()
+        localStorage.setItem('userData', JSON.stringify({username}))
+        setSocketUsername(username)
+        connectChatSocket()
         setIsAuthenticated(response?.data.isAuthenticated)
       }
   };

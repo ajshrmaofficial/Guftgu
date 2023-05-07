@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import authContext from "../../utility/authContext";
-import chatSocket from "../../utility/socket";
+import {chatSocket} from "../../utility/socket";
 import "../../css/App.css"
 
 const Mehfil = () => {
