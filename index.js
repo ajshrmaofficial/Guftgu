@@ -39,11 +39,6 @@ redisClient.on('error', (err)=>{
     console.log('Could not establish connection to redis: ' + err)
 })
 
-server.get('/check', (req, res)=>{
-    console.log(req.sessionID)
-    res.send(req.sessionID)
-})
-
 chatNamespace = io.of('/chat');
 
 chatNamespace.on('connection', (socket)=>{
@@ -56,6 +51,7 @@ chatNamespace.on('connection', (socket)=>{
 })
 
 chatNamespace.use((socket, next)=>{
+    console.log(`Request from socket with sessionID: ${socket.request.sessionID}`)
     const username = socket.handshake.auth.username
     if(!username){
         return next(new Error("invalid username"))
