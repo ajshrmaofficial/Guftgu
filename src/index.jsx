@@ -10,6 +10,7 @@ import Dashboard from "./components/dashboard/Dashboard";
 import Guftgu from "./components/dashboard/Guftgu";
 import Mehfil from "./components/dashboard/Mehfil";
 import Protected from "./utility/Protected";
+import ErrorPage from "./components/utility/ErrorPage";
 
 const router = createBrowserRouter([
   {
@@ -57,6 +58,7 @@ const router = createBrowserRouter([
         ],
       },
     ],
+    errorElement: <ErrorPage/>
   },
 ]);
 
