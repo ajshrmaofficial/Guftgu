@@ -11,7 +11,7 @@ chatSocket.onAny((event)=>{
 })
 
 function setSocketUsername(username){
-    chatSocket.auth = username
+    chatSocket.auth = {username}
 }
 
 function connectChatSocket(){
