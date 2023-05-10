@@ -21,7 +21,7 @@ function Register(){
     const submit = async(e) => {
         e.preventDefault();
         const response = await registerUser({username, passwd})
-        if(response.status==200) navigate('/login')
+        if(response?.status==200) navigate('/login')
     };
 
     return(
@@ -43,7 +43,7 @@ function Register(){
         <br />
         <button type="submit">Submit</button>
       </form>
-        {error && <p>{error}</p>}
+        {error && <p>{error?.message}</p>}
         </>
     )
 }

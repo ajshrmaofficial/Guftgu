@@ -6,10 +6,6 @@ const chatSocket = io(URL + '/chat', {
     withCredentials: true
 })
 
-chatSocket.onAny((event)=>{
-    console.log(`Log from chatSocket(event): ${event}`)
-})
-
 function setSocketUsername(username){
     chatSocket.auth = {username}
 }
