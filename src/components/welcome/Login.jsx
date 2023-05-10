@@ -5,7 +5,7 @@ import server from "../../utility/serverConfig"
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(""); 
   const [passwd, setPasswd] = useState("");
   const [error, setError] = useState('')
   const {isAuthenticated, setIsAuthenticated} = useContext(authContext)
