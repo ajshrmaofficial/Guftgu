@@ -7,12 +7,17 @@ const Mehfil = () => {
   const {isAuthenticated, setIsAuthenticated} = useContext(authContext)
   const [message, setMessage] = useState("");
 
+  const assignMessage = ({fromUsername, recievedMessage}) => {
+    const messageList = document.querySelector("#messageList");
+      const li = document.createElement("li");
+      li.textContent = `#${fromUsername}: ` + recievedMessage;
+      messageList.appendChild(li);
+  }
+
   useEffect(() => {
     const onChat = ({message, fromID, fromUsername}) => {
-      const messageList = document.querySelector("#messageList");
-      const li = document.createElement("li");
-      li.textContent = `#${fromUsername}: ` + message;
-      messageList.appendChild(li);                         
+      if(fromID===chatSocket.id) return
+      assignMessage({fromUsername, recievedMessage: message})
     };
 
     chatSocket.on("chat message", onChat);
@@ -24,7 +29,8 @@ const Mehfil = () => {
 
   const sendMessage = (e) => {
     e.preventDefault();
-    chatSocket.emit("chat message", {message, fromID:chatSocket.id, fromUsername:chatSocket.auth.username});
+    chatSocket.emit("chat message", message);
+    assignMessage({fromUsername: chatSocket.auth.username, recievedMessage: message})
     setMessage("")
   };
 
