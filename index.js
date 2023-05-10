@@ -44,14 +44,13 @@ chatNamespace = io.of('/chat');
 chatNamespace.on('connection', (socket)=>{
     console.log('Socket.io sessionID: '+JSON.stringify(socket.request.sessionID))
     console.log(`A user connected to chat namespace: ${socket.id} ${socket.username}`)
-    socket.on('chat message', ({message, fromID, fromUsername})=>{
+    socket.on('chat message', (message)=>{
         console.log(`Recieved message from ${socket.username}: `, message)
-        chatNamespace.emit('chat message', {message, fromID, fromUsername})
+        chatNamespace.emit('chat message', {message, fromID: socket.id, fromUsername: socket.username})
     })
 })
 
 chatNamespace.use((socket, next)=>{
-    console.log(`Request from socket with sessionID: ${socket.request.sessionID}`)
     const username = socket.handshake.auth.username
     if(!username){
         return next(new Error("invalid username"))
@@ -61,5 +60,5 @@ chatNamespace.use((socket, next)=>{
 })
 
 httpServer.listen(process.env.PORT, ()=>{
-    console.log("Server is running on port 3000")
+    console.log(`Server is running on port ${process.env.PORT}`)
 })
