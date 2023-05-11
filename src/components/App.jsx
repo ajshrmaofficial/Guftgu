@@ -19,6 +19,9 @@ function App() {
           connectChatSocket();
           setIsAuthenticated(true);
         }
+        else{
+          localStorage.removeItem('userData')
+        }
       } catch (err) {
         console.log(err);
       }
