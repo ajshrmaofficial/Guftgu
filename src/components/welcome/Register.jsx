@@ -33,12 +33,14 @@ function Register(){
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          required
         />
         <h3>Password:</h3>
         <input
           type="password"
           value={passwd}
           onChange={(e) => setPasswd(e.target.value)}
+          required
         />
         <br />
         <button type="submit">Submit</button>
