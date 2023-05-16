@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import authContext from "../utility/authContext";
 import { useEffect, useState } from "react";
 import server from "../utility/serverConfig";
@@ -18,9 +18,8 @@ function App() {
           setSocketUsername(userData.username);
           connectChatSocket();
           setIsAuthenticated(true);
-        }
-        else{
-          localStorage.removeItem('userData')
+        } else {
+          localStorage.removeItem("userData");
         }
       } catch (err) {
         console.log(err);
@@ -31,7 +30,8 @@ function App() {
 
   return (
     <authContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
-      <h1>App file</h1>
+      {/* <h1>App file</h1> */}
+      
       <Outlet />
     </authContext.Provider>
   );

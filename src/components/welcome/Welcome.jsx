@@ -3,8 +3,8 @@ import { Outlet, Link } from "react-router-dom"
 function Welcome() {
     return(
         <>
-        <h1>Welcome</h1>
-            <nav>
+            <nav className="loginNavbar">
+                <h2>Guftgu</h2>
                 <ul>
                     <li>
                         <Link to={'/login'}>Login</Link>

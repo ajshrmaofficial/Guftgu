@@ -1,32 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 import server from "../../utility/serverConfig";
+import authContext from "../../utility/authContext";
 import { useNavigate } from "react-router-dom";
 
 function Register(){
     const [username, setUsername] = useState("");
     const [passwd, setPasswd] = useState("");
     const [error, setError] = useState('')
+    const {isAuthenticated, setIsAuthenticated} = useContext(authContext)
     const navigate = useNavigate()
+
+    useEffect(()=>{
+      if(isAuthenticated) navigate('/')
+    }, [isAuthenticated])
 
     const registerUser = async(credentials)=> {
         try {
             const res = await server.post('/auth/register', credentials)
             return res
           } catch (err) {
-            console.log(err)
-            setError(err)
+            // console.log(err)
+            setUsername("")
+            setPasswd("")
+            setError(err.response.statusText)
           }
         }
 
     const submit = async(e) => {
+        setError("")
         e.preventDefault();
         const response = await registerUser({username, passwd})
         if(response?.status==200) navigate('/login')
     };
 
     return(
-        <>
-        <h1>Register</h1>
+        <div className="signupPage">
+        <h2>Register</h2>
         <form onSubmit={submit}>
         <h3>Username:</h3>
         <input
@@ -45,8 +54,8 @@ function Register(){
         <br />
         <button type="submit">Submit</button>
       </form>
-        {error && <p>{error?.message}</p>}
-        </>
+        {error && <p>{error}</p>}
+        </div>
     )
 }
 

@@ -21,6 +21,8 @@ const Login = () => {
         return res
       } catch (err) {
         console.log(err)
+        setPasswd("")
+        setUsername("")
         setError(err?.response.statusText)
         setIsAuthenticated(false)
       }
@@ -38,17 +40,17 @@ const Login = () => {
   };
 
   return (
-    <div>
+    <div className="loginPage">
       <h2>Login</h2>
       <form onSubmit={submit}>
-        <h3>Username:</h3>
+        <h3>Username</h3>
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
         />
-        <h3>Password:</h3>
+        <h3>Password</h3>
         <input
           type="password"
           value={passwd}

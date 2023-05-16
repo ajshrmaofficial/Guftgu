@@ -1,0 +1,190 @@
+.navbar, .loginNavbar{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+}
+
+.navbar ul, .loginNavbar ul{
+  display: flex;
+  flex-direction: row;
+  list-style: none;
+}
+
+.navbar ul li, .loginNavbar ul li{
+  margin: 0 10px;
+  border: 1px solid #ddd;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.navbar ul li a, .loginNavbar ul li a{
+  text-decoration: none;
+  color: black;
+}
+
+.logoutBtn{
+  background-color: #fff;
+  border: none;
+  cursor: pointer;
+  color: red;
+  border: 1px solid red;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+
+.messagesContainer {
+  display: flex;
+  flex-direction: column;
+  height: 74vh;
+  margin: 10px;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  align-items: flex-start;
+  overflow-y: auto;
+
+}
+
+.chatInput form{
+  align-items: center;
+  margin: 10px;
+  display: flex;
+}
+
+.chatInput input[type="text"] {
+  flex-grow: 1;
+  border: 2px solid black;
+  border-radius: 20px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.chatInput button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.chatInput button svg {
+  width: 24px;
+  height: 24px;
+  fill: black;
+  vertical-align: middle;
+}
+
+.chatMessage{
+  width: 89vw;
+  display: flex;
+  flex-direction: row;
+}
+
+.sentMessage{
+  margin-left: auto;
+  background-color: #dcf8c6;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.recievedMessage{
+  margin-right: auto;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.username{
+  color: #888;
+  font-size: smaller;
+}
+
+.loginPage, .signupPage{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.loginPage h2, .signupPage h2{
+  color: #262121;
+  margin-bottom: 10px;
+}
+
+.loginPage form, .signupPage form{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 300px;
+  height: 300px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.loginPage form input[type="text"], .loginPage form input[type="password"], .signupPage form input[type="text"], .signupPage form input[type="password"]{
+  width: 200px;
+  padding: 10px;
+  margin: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.loginPage form button, .signupPage form button{
+  width: 100px;
+  padding: 10px;
+  margin: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.loginPage form button:hover, .signupPage form button:hover{
+  background-color: #ddd;
+}
+
+.loginPage form p, .signupPage form p{
+  color: red;
+  font-size: smaller;
+}
+
+.loginPage form h3, .signupPage form h3{
+  color: #262121;
+  margin-bottom: 10px;
+}
+
+.errorPage{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.errorPage h2{
+  color: #262121;
+  margin-bottom: 10px;
+}
+
+.errorPage h3{
+  color: #262121;
+  margin-bottom: 10px;
+}
+
+.errorPage a{
+  color: #262121;
+  text-decoration: none;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: smaller;
+}

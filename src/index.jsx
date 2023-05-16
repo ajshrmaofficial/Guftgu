@@ -26,6 +26,14 @@ const router = createBrowserRouter([
         ),
         children: [
           {
+            path: "/",
+            element: (
+              <Protected>
+                <Mehfil />
+              </Protected>
+            ),
+          },
+          {
             path: "/guftgu",
             element: (
               <Protected>
@@ -33,15 +41,7 @@ const router = createBrowserRouter([
               </Protected>
             ),
           },
-          {
-            path: "/mehfil",
-            element: (
-              <Protected>
-                <Mehfil />
-              </Protected>
-            ),
-          },
-        ]
+        ],
       },
       {
         path: "/",
@@ -58,7 +58,7 @@ const router = createBrowserRouter([
         ],
       },
     ],
-    errorElement: <ErrorPage/>
+    errorElement: <ErrorPage />,
   },
 ]);
 
