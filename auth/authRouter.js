@@ -9,7 +9,7 @@ const redisClient = sessionManager.redisClient;
 
 async function connectMongoose() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI, {dbName: "userDB"});
     console.log("connected to mongoose database");
   } catch (err) {
     console.log(err);
