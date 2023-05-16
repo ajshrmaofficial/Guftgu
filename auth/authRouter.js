@@ -6,8 +6,6 @@ const userModel = require("../schema/userSchema");
 const authRouter = express.Router();
 const sessionManager = require("./sessionManager");
 const redisClient = sessionManager.redisClient;
-const socket = require('../index')
-var users = [];
 
 async function connectMongoose() {
   try {
