@@ -5,8 +5,8 @@ const http = require('http')
 const httpServer = http.createServer(server)
 const cors = require('cors');
 const cookieParser = require('cookie-parser')
-const { sessionMiddleware, redisClient } = require('./sessionManager')
-const authRouter = require('./authRouter')
+const { sessionMiddleware, redisClient } = require('./auth/sessionManager')
+const authRouter = require('./auth/authRouter')
 
 const corsConfig = {
     origin: process.env.FRONTEND_IP,
@@ -62,3 +62,5 @@ chatNamespace.use((socket, next)=>{
 httpServer.listen(process.env.PORT, ()=>{
     console.log(`Server is running on port ${process.env.PORT}`)
 })
+
+module.exports = io
