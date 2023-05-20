@@ -3,10 +3,7 @@ const session = require('express-session')
 const redisStore = require('connect-redis').default
 const redis = require('redis')
 
-const redisClient = redis.createClient(process.env.REDIS_URI, {
-    tls: {servername: new URL(process.env.REDIS_URI).hostname}
-}
-)
+const redisClient = redis.createClient(process.env.REDIS_URI)
 
 const sessionMiddleware = session({
     store: new redisStore({client: redisClient}),
