@@ -32,13 +32,18 @@ authRouter.get("/isLoggedIn", async (req, res) => {
 authRouter.post("/login", async (req, res) => {
   const { username, passwd } = req.body;
   if (!username.length || !passwd.length) {
-    res.send("missing fields !!");
+    res.statusMessage = "missing fields !!";
+    res.status(401).send({ isAuthenticated: false });
     return;
   }
   const sess = req.session;
   try {
     const user = await userModel.findOne({ username: username });
-    if (!user) return res.status(401).send("user not found !!!");
+    if (!user){
+      res.statusMessage = "user not found !!!";
+      res.status(401).send({ isAuthenticated: false });
+      return;
+    }
     if (await bcrypt.compare(passwd, user.passwd)) {
       console.log("user authenticated !!");
       const authToken = randomBytes(16).toString("hex");
@@ -68,7 +73,8 @@ authRouter.post("/login", async (req, res) => {
 authRouter.post("/register", async (req, res) => {
   const { username, passwd } = req.body;
   if (!username.length || !passwd.length) {
-    res.send("missing fields !!");
+    res.statusMessage = "missing fields !!";
+    res.status(401).end();
     return;
   }
   const result = await userModel.isUsernameTaken(username);
