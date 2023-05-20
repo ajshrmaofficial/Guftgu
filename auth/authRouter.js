@@ -53,7 +53,8 @@ authRouter.post("/login", async (req, res) => {
         .cookie("authToken", sess.authToken, {
           httpOnly: true,
         })
-        .send({ isAuthenticated: true });
+        .send({ isAuthenticated: true })
+        .end();
     } else {
       res.statusMessage = "Incorrect Credentials !!!";
       res.status(401).send({ isAuthenticated: false });
