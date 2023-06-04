@@ -1,42 +1,45 @@
 import { useContext, useEffect, useState } from "react";
-import {setSocketUsername, connectChatSocket} from "../../utility/socket";
+import { setSocketUsername, connectChatSocket } from "../../utility/socket";
 import authContext from "../../utility/authContext";
-import server from "../../utility/serverConfig"
+import server from "../../utility/serverConfig";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [username, setUsername] = useState(""); 
+  const [username, setUsername] = useState("");
   const [passwd, setPasswd] = useState("");
-  const [error, setError] = useState('')
-  const {isAuthenticated, setIsAuthenticated} = useContext(authContext)
-  const navigate = useNavigate()
+  const [error, setError] = useState("");
+  const { isAuthenticated, setIsAuthenticated } = useContext(authContext);
+  const navigate = useNavigate();
 
-  useEffect(()=>{
-    if(isAuthenticated) navigate('/')
-  }, [isAuthenticated])
+  useEffect(() => {
+    if (isAuthenticated) navigate("/");
+  }, [isAuthenticated]);
 
-  const loginUser = async(credentials)=> {
+  const loginUser = async (credentials) => {
     try {
-        const res = await server.post('/auth/login', credentials, {withCredentials: true})
-        return res
-      } catch (err) {
-        console.log(err)
-        setPasswd("")
-        setUsername("")
-        setError(err?.response.statusText)
-        setIsAuthenticated(false)
-      }
+      const res = await server.post("/auth/login", credentials, {
+        withCredentials: true,
+      });
+      return res;
+    } catch (err) {
+      console.log(err);
+      setPasswd("");
+      setUsername("");
+      setError(err?.response.data);
+      setIsAuthenticated(false);
     }
-    
-    const submit = async(e) => {
-      e.preventDefault();
-      const response = await loginUser({username, passwd})
-      if(response?.data.isAuthenticated){
-        localStorage.setItem('userData', JSON.stringify({username}))
-        setSocketUsername(username)
-        connectChatSocket()
-        setIsAuthenticated(response?.data.isAuthenticated)
-      }
+  };
+
+  const submit = async (e) => {
+    setError("");
+    e.preventDefault();
+    const response = await loginUser({ username, passwd });
+    if (response?.data.isAuthenticated) {
+      localStorage.setItem("userData", JSON.stringify({ username }));
+      setSocketUsername(username);
+      connectChatSocket();
+      setIsAuthenticated(response?.data.isAuthenticated);
+    }
   };
 
   return (
@@ -58,9 +61,9 @@ const Login = () => {
           required
         />
         <br />
+        {error && <p>{error}</p>}
         <button type="submit">Submit</button>
       </form>
-      {error && <p>{error}</p>}
     </div>
   );
 };

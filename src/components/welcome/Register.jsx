@@ -3,40 +3,50 @@ import server from "../../utility/serverConfig";
 import authContext from "../../utility/authContext";
 import { useNavigate } from "react-router-dom";
 
-function Register(){
-    const [username, setUsername] = useState("");
-    const [passwd, setPasswd] = useState("");
-    const [error, setError] = useState('')
-    const {isAuthenticated, setIsAuthenticated} = useContext(authContext)
-    const navigate = useNavigate()
+function Register() {
+  const [username, setUsername] = useState("");
+  const [passwd, setPasswd] = useState("");
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const { isAuthenticated, setIsAuthenticated } = useContext(authContext);
+  const navigate = useNavigate();
 
-    useEffect(()=>{
-      if(isAuthenticated) navigate('/')
-    }, [isAuthenticated])
+  useEffect(() => {
+    if (isAuthenticated) navigate("/");
+  }, [isAuthenticated]);
 
-    const registerUser = async(credentials)=> {
-        try {
-            const res = await server.post('/auth/register', credentials)
-            return res
-          } catch (err) {
-            // console.log(err)
-            setUsername("")
-            setPasswd("")
-            setError(err.response.statusText)
-          }
-        }
+  const registerUser = async (credentials) => {
+    try {
+      const res = await server.post("/auth/register", credentials);
+      return res;
+    } catch (err) {
+      // console.log(err)
+      setUsername("");
+      setPasswd("");
+      setError(err.response.data);
+    }
+  };
 
-    const submit = async(e) => {
-        setError("")
-        e.preventDefault();
-        const response = await registerUser({username, passwd})
-        if(response?.status==200) navigate('/login')
-    };
+  const submit = async (e) => {
+    setError("");
+    e.preventDefault();
+    const response = await registerUser({ username, passwd });
+    if (response?.status == 201) {
+      setUsername("");
+      setPasswd("");
+      setMessage(
+        response.data +
+          "\n" +
+          "You are being redirected to login page in 3 seconds."
+      );
+      setTimeout(() => navigate("/login"), 3000);
+    }
+  };
 
-    return(
-        <div className="signupPage">
-        <h2>Register</h2>
-        <form onSubmit={submit}>
+  return (
+    <div className="signupPage">
+      <h2>Register</h2>
+      <form onSubmit={submit}>
         <h3>Username:</h3>
         <input
           type="text"
@@ -52,11 +62,12 @@ function Register(){
           required
         />
         <br />
+        {error && <p id="error">{error}</p>}
+        {!error && message && <p id="registerMessage">{message}</p>}
         <button type="submit">Submit</button>
       </form>
-        {error && <p>{error}</p>}
-        </div>
-    )
+    </div>
+  );
 }
 
-export default Register
+export default Register;
