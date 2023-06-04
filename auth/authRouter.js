@@ -5,6 +5,10 @@ const mongoose = require("mongoose");
 const userModel = require("../schema/userSchema");
 const authRouter = express.Router();
 const sessionManager = require("./sessionManager");
+const errorHandler = require("../utils/errorHandler");
+const { tryCatch } = require("../utils/tryCatch");
+const { USER_NOT_FOUND, MISSING_FIELDS, INVALID_CREDENTIALS, USERNAME_TAKEN } = require("../utils/errorCodes");
+const AppError = require("../utils/appError");
 const redisClient = sessionManager.redisClient;
 
 async function connectMongoose() {
@@ -29,21 +33,35 @@ authRouter.get("/isLoggedIn", async (req, res) => {
   }
 });
 
-authRouter.post("/login", async (req, res) => {
+authRouter.post("/register", tryCatch(async (req, res) => {
   const { username, passwd } = req.body;
-  if (!username.length || !passwd.length) {
-    res.statusMessage = "missing fields !!";
-    res.status(401).send({ isAuthenticated: false });
-    return;
+  if (!username || !passwd) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
+  
+  const result = await userModel.isUsernameTaken(username);
+  if (result) throw new AppError(USERNAME_TAKEN.errorCode, USERNAME_TAKEN.message, USERNAME_TAKEN.statusCode);
+
+  var salt = await bcrypt.genSalt();
+  var hashedPwd = await bcrypt.hash(passwd, salt);
+  const newUser = new userModel({ username, passwd:hashedPwd });
+  
+  const userSaveResult = await newUser.save();
+  if(!userSaveResult) throw new AppError(INTERNAL_SERVER_ERROR.errorCode, INTERNAL_SERVER_ERROR.message, INTERNAL_SERVER_ERROR.statusCode);
+  
+  console.log("user registered");
+  res.status(201).send("User registered successfully") // TODO: change this to error code
+
+}));
+
+authRouter.post("/login", tryCatch(async (req, res)=>{
+  const { username, passwd } = req.body;
+     if (!username || !passwd) {
+    throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode)
   }
   const sess = req.session;
-  try {
     const user = await userModel.findOne({ username: username });
-    if (!user){
-      res.statusMessage = "user not found !!!";
-      res.status(401).send({ isAuthenticated: false });
-      return;
-    }
+    
+    if (!user) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode)
+
     if (await bcrypt.compare(passwd, user.passwd)) {
       console.log("user authenticated !!");
       const authToken = randomBytes(16).toString("hex");
@@ -52,55 +70,16 @@ authRouter.post("/login", async (req, res) => {
       sess.sessionID = req.sessionID;
       console.log("created session is: " + sess.sessionID);
       res
+        .status(200)  // TODO: change this to error code
         .cookie("sessionID", sess.sessionID, {
           httpOnly: true,
         })
         .cookie("authToken", sess.authToken, {
           httpOnly: true,
         })
-        .send({ isAuthenticated: true })
         .end();
-    } else {
-      res.statusMessage = "Incorrect Credentials !!!";
-      res.status(401).send({ isAuthenticated: false });
-    }
-  } catch (err) {
-    console.log(`Error while logging in user: ${err.message}`);
-    return res.status(500).send("Error on server while logging in !!");
-  }
-});
-
-authRouter.post("/register", async (req, res) => {
-  const { username, passwd } = req.body;
-  if (!username.length || !passwd.length) {
-    res.statusMessage = "missing fields !!";
-    res.status(401).end();
-    return;
-  }
-  const result = await userModel.isUsernameTaken(username);
-  if (result) {
-    res.statusMessage = "username already taken !!"
-    res.sendStatus(406);
-    return;
-  }
-  try {
-    var salt = await bcrypt.genSalt();
-    var hashedPwd = await bcrypt.hash(passwd, salt);
-  } catch (err) {
-    console.log(err);
-    res.status(500).send("Some error occured at server !!");
-    return;
-  }
-  const newUser = new userModel({ username, passwd:hashedPwd });
-  try {
-    await newUser.save();
-    console.log("user registered");
-    res.status(200).send("user registered !!");
-  } catch (error) {
-    console.log(`Error at registering user: ${error}`);
-    res.status(500).send("Some error occured at server !!");
-  }
-});
+    } else throw new AppError(INVALID_CREDENTIALS.errorCode, INVALID_CREDENTIALS.message, INVALID_CREDENTIALS.statusCode)
+}));
 
 authRouter.get("/logout", async (req, res) => {
   if (!req.cookies?.sessionID) return
@@ -111,5 +90,7 @@ authRouter.get("/logout", async (req, res) => {
     .clearCookie("sid")
     .end();
 });
+
+authRouter.use(errorHandler)
 
 module.exports = authRouter;
