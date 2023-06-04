@@ -36,9 +36,9 @@ const Login = () => {
     const response = await loginUser({ username, passwd });
     if (response?.status==200) {
       localStorage.setItem("userData", JSON.stringify({ username }));
-      setIsAuthenticated(true);
       setSocketUsername(username);
       connectChatSocket();
+      setIsAuthenticated(true);
     }
   };
 
