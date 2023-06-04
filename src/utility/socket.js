@@ -4,7 +4,7 @@ const URL = import.meta.env.VITE_SERVER_IP
 const chatSocket = io(URL + '/chat', {
     autoConnect: false,
     withCredentials: true,
-    transports: ['websocket']
+    transports: ['websocket', 'polling']
 })
 
 function setSocketUsername(username){
