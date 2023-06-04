@@ -11,7 +11,6 @@ function setSocketUsername(username){
 }
 
 function connectChatSocket(){
-    console.log(chatSocket.auth.username)
     chatSocket.connect()
 }
 
