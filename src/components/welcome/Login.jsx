@@ -34,11 +34,11 @@ const Login = () => {
     setError("");
     e.preventDefault();
     const response = await loginUser({ username, passwd });
-    if (response?.data.isAuthenticated) {
+    if (response?.status==200) {
       localStorage.setItem("userData", JSON.stringify({ username }));
       setSocketUsername(username);
       connectChatSocket();
-      setIsAuthenticated(response?.data.isAuthenticated);
+      setIsAuthenticated(true);
     }
   };
 
