@@ -14,7 +14,8 @@ const corsConfig = {
 }
 
 const io = require('socket.io')(httpServer, {
-    cors: corsConfig
+    cors: corsConfig,
+    transports: ['websocket', 'polling']
 })
 
 async function connectRedis() {
