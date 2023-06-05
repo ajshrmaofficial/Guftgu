@@ -1,12 +1,24 @@
 require('dotenv').config()
 const express = require('express')
 const  server = express()
-const http = require('http')
-const httpServer = http.createServer(server)
 const cors = require('cors');
 const cookieParser = require('cookie-parser')
 const { sessionMiddleware, redisClient } = require('./auth/sessionManager')
 const authRouter = require('./auth/authRouter')
+
+var httpServer
+// setup for https server in production
+if(process.env.NODE_ENV === 'production'){
+    const fs = require('fs')
+    const https = require('https')
+    const privateKey = fs.readFileSync('./privkey.pem', 'utf8')
+    const certificate = fs.readFileSync('./cert.pem', 'utf8')
+    const credentials = {key: privateKey, cert: certificate}
+    httpServer = https.createServer(credentials, server)
+} else {
+    const http = require('http')
+    httpServer = http.createServer(server)
+}
 
 const corsConfig = {
     origin: process.env.FRONTEND_IP,
