@@ -1,0 +1,33 @@
+services:
+  mongo_db:
+    container_name: db_container
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo_db:/data/db
+
+  redis_db:
+    container_name: session_container
+    image: redis:latest
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_db:/data/db
+
+  api:
+    container_name: api_container
+    build: .
+    ports: 
+      - 3000:3000
+    volumes:
+      - .:/app
+    depends_on:
+      - mongo_db
+      - redis_db
+
+volumes:
+  mongo_db:
+  redis_db:
