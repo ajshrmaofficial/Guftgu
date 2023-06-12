@@ -6,8 +6,7 @@ const cookieParser = require('cookie-parser')
 const { sessionMiddleware, redisClient } = require('./auth/sessionManager')
 const authRouter = require('./auth/authRouter')
 
-var httpServer
-// setup for https server in production
+var httpServer // setup for https server in production
 if(process.env.NODE_ENV === 'production'){
     const fs = require('fs')
     const https = require('https')
@@ -29,7 +28,7 @@ const io = require('socket.io')(httpServer, {
     cors: corsConfig,
 })
 
-async function connectRedis() {
+async function connectRedis() { // connecting to redis server
     await redisClient.connect()
 }
 connectRedis()
@@ -52,7 +51,7 @@ redisClient.on('error', (err)=>{
 })
 
 chatNamespace = io.of('/chat');
-
+// TODO: add authentication/authorization to chat namespace (maybe use jwt token)
 chatNamespace.on('connection', (socket)=>{
     console.log('Socket.io sessionID: '+JSON.stringify(socket.request.sessionID))
     console.log(`A user connected to chat namespace: ${socket.id} ${socket.username}`)
@@ -75,4 +74,4 @@ httpServer.listen(process.env.PORT, ()=>{
     console.log(`Server is running on port ${process.env.PORT}`)
 })
 
-module.exports = io
+// module.exports = io
