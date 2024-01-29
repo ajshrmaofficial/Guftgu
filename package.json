@@ -2,10 +2,9 @@
   "name": "root",
   "private": true,
   "workspaces": [
-	  "web/",
-	  "app/",
-	  "backend/"
+	  "packages/*"
   ],
+  "version": "1.0.0",
   "dependencies": {},
   "devDependencies": {
     "lerna": "^8.0.2"
