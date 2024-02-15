@@ -50,7 +50,15 @@ redisClient.on('error', (err)=>{
     console.log('Could not establish connection to redis: ' + err)
 })
 
-chatNamespace = io.of('/chat');
+server.get('/', (req, res)=>{
+    res.send('Hello from Guftgu server 👋')
+})
+
+io.engine.on('connection_error', (err)=>{
+    console.log('socket.io connection error: ', err)
+})
+
+const chatNamespace = io.of('/chat');
 // TODO: add authentication/authorization to chat namespace (maybe use jwt token)
 chatNamespace.on('connection', (socket)=>{
     console.log('Socket.io sessionID: '+JSON.stringify(socket.request.sessionID))
