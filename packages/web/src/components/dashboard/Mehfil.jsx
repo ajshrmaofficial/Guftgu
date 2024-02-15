@@ -4,6 +4,7 @@ import "../../css/App.css";
 
 const Mehfil = () => {
   const [message, setMessage] = useState("");
+  const [errro, setError] = useState(null);
 
   const assignMessage = ({ fromUsername, recievedMessage }) => {
     const messageList = document.querySelector(".messagesContainer");
@@ -34,6 +35,16 @@ const Mehfil = () => {
       assignMessage({ fromUsername, recievedMessage: message });
     };
 
+    chatSocket.on("connect_error", (err)=>{
+      console.log('socket error: ', err)
+      setError('Could not connect to chat server...')
+    })
+
+    chatSocket.on("connect", () => {
+      console.log("connected to chat server, yeeee 🥳");
+      setError(null);
+    });
+
     chatSocket.on("chat message", onChat);
 
     return () => {
@@ -51,6 +62,7 @@ const Mehfil = () => {
   return (
     <div className="chatContainer">
       {/* <h1>Guftgu</h1> */}
+      {errro && <p className="errorMessage">{errro}</p>}
       <div className="messagesContainer"></div>
       <div className="chatInput">
         <form onSubmit={sendMessage}>
