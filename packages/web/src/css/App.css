@@ -209,3 +209,9 @@
   padding: 10px;
   font-size: smaller;
 }
+
+.errorMessage {
+  color: red;
+  font-size: smaller;
+  
+}
