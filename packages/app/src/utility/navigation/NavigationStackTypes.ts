@@ -8,4 +8,3 @@ export type NavStackParamList = {
 };
 
 export type NavStackProps<T extends keyof NavStackParamList> = NativeStackScreenProps<NavStackParamList, T>;
-// export type AppStackNavProps<T extends keyof AppStackParamList> = NativeStackScreenProps<AppStackParamList, T>;
