@@ -10,6 +10,7 @@ const { tryCatch } = require("../utils/tryCatch");
 const { USER_NOT_FOUND, MISSING_FIELDS, INVALID_CREDENTIALS, USERNAME_TAKEN } = require("../utils/errorCodes");
 const AppError = require("../utils/appError");
 const redisClient = sessionManager.redisClient;
+const jwt = require("jsonwebtoken");
 
 async function connectMongoose() {
   try {
@@ -61,23 +62,25 @@ authRouter.post("/login", tryCatch(async (req, res)=>{
     const user = await userModel.findOne({ username: username });
     
     if (!user) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode)
-
+    console.log('login api hit...')
     if (await bcrypt.compare(passwd, user.passwd)) {
       console.log("user authenticated !!");
-      const authToken = randomBytes(16).toString("hex");
-      sess.username = username;
-      sess.authToken = authToken;
-      sess.sessionID = req.sessionID;
-      console.log("created session is: " + sess.sessionID);
-      res
-        .status(200)  // TODO: change this to error code
-        .cookie("sessionID", sess.sessionID, {
-          httpOnly: true,
-        })
-        .cookie("authToken", sess.authToken, {
-          httpOnly: true,
-        })
-        .end();
+      // const authToken = randomBytes(16).toString("hex");
+      // sess.username = username;
+      // sess.authToken = authToken;
+      // sess.sessionID = req.sessionID;
+      // console.log("created session is: " + sess.sessionID);
+      // res
+      //   .status(200)  // TODO: change this to error code
+      //   .cookie("sessionID", sess.sessionID, {
+      //     httpOnly: true,
+      //   })
+      //   .cookie("authToken", sess.authToken, {
+      //     httpOnly: true,
+      //   })
+      //   .end();
+      const authToken = jwt.sign({username}, process.env.JWT_SECRET, {expiresIn: "1h"});
+      res.status(200).json({authToken});
     } else throw new AppError(INVALID_CREDENTIALS.errorCode, INVALID_CREDENTIALS.message, INVALID_CREDENTIALS.statusCode)
 }));
 
