@@ -21,34 +21,34 @@ if(process.env.NODE_ENV === 'production'){
 
 const corsConfig = {
     origin: process.env.FRONTEND_IP,
-    credentials: true
+    credentials: true,
 }
 
 const io = require('socket.io')(httpServer, {
     cors: corsConfig,
 })
 
-async function connectRedis() { // connecting to redis server
-    await redisClient.connect()
-}
-connectRedis()
+// async function connectRedis() { // connecting to redis server
+//     await redisClient.connect()
+// }
+// connectRedis()
 
 server.use(cors(corsConfig));
 
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
 server.use(cookieParser())
-server.use(sessionMiddleware)
+// server.use(sessionMiddleware)
 server.use('/auth', authRouter)
-io.engine.use(sessionMiddleware)
+// io.engine.use(sessionMiddleware)
 
-redisClient.on('connect', ()=>{
-    console.log('connected to redis')
-})
+// redisClient.on('connect', ()=>{
+//     console.log('connected to redis')
+// })
 
-redisClient.on('error', (err)=>{
-    console.log('Could not establish connection to redis: ' + err)
-})
+// redisClient.on('error', (err)=>{
+//     console.log('Could not establish connection to redis: ' + err)
+// })
 
 server.get('/', (req, res)=>{
     res.send('Hello from Guftgu server 👋')
