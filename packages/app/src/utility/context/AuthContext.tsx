@@ -1,4 +1,6 @@
-import React, { Dispatch, createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
+import server from "../axiosConfig";
+import { AxiosResponse } from "axios";
 
 interface AuthData {
     token: string | null;
@@ -9,7 +11,7 @@ interface AuthContextData {
     authData: AuthData;
     setAuthData: React.Dispatch<React.SetStateAction<AuthData>>;
     loading: boolean;
-    login: (username: string, password: string) => Promise<string>;
+    login: (username: string, password: string) => Promise<void>;
     register: (username: string, password: string) => Promise<void>;
 }
 
@@ -18,21 +20,27 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 function AuthProvider({children}: {children: React.ReactNode}): React.JSX.Element {
     const [authData, setAuthData] = useState<AuthData>({token: null, username: null});
     const [loading, setLoading] = useState<boolean>(false);
-    
-    const login = async (username: string, password: string): Promise<string> => { // TODO: Remove/Replace string type with void in this promise
-        setLoading(true);
+    console.log(server.defaults.baseURL)
+    const login = async (username: string, password: string) => { // TODO: Remove/Replace string type with void in this promise
         console.log("Logging in with username:", username, "and password:", password);
-        return new Promise((resolve, reject)=>{
-            setTimeout(()=>{
-                resolve("User logged in!!!")
-            }, 2000)
-        })
+        setLoading(true);
+        try {
+            const response = await server.post("/auth/login", {username, password});
+            if(response.status === 200) {
+                setAuthData({token: response.data.token, username: username});
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false);
+        }
+        return Promise<void>(() => {
+            console.log("Logged in");
+        });
     }
 
     const register = async (username: string, password: string): Promise<void> => {
-        setLoading(true);
         console.log("Registering with username:", username, "and password: ", password);
-        setLoading(false);
     }
 
     return (

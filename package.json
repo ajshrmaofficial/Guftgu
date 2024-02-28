@@ -1,0 +1,15 @@
+{
+  "name": "guftgu",
+  "version": "0.0.1",
+  "description": "Welcome to the collaborative hub for building Guftgu, a chat app designed to foster meaningful connections and conversations.",
+  "private": "true",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "keywords": [],
+  "author": "Ajay Sharma",
+  "license": "GNU"
+}

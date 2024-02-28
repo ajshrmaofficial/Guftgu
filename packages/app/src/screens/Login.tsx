@@ -8,13 +8,10 @@ function Login({navigation}: NavStackProps<"Login">): React.JSX.Element {
     const [username, setUsername] = useState<string>('')
     const [password, setPassword] = useState<string>('')
 
-    const {authData, setAuthData, login, loading} = useAuth();
+    const {login, loading} = useAuth();
 
     const onPress = () => {
-        login(username, password).then((result)=>{
-            console.log(result);
-            setAuthData({token: 'fsadfsf', username});
-        });
+       login(username, password);
     }
 
     return (
@@ -30,7 +27,7 @@ function Login({navigation}: NavStackProps<"Login">): React.JSX.Element {
                     <TextInput className="border border-white rounded-md w-full mb-4" placeholder="Username" value={username} onChangeText={(text) => setUsername(text)} />
                     <Text className="self-start">Password</Text>
                     <TextInput className="border border-white rounded-md w-full mb-5" placeholder="Password" value={password} onChangeText={(text) => setPassword(text)} />
-                    <TouchableOpacity className="border border-white rounded-md w-2/3 p-2 items-center" onPress={onPress}> 
+                    <TouchableOpacity className="border border-white rounded-md w-2/3 p-2 items-center" onPress={!loading && onPress}> 
                         <Text>Submit</Text>
                     </TouchableOpacity>
                 </View>

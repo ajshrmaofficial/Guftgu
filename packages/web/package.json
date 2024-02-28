@@ -2,6 +2,9 @@
   "name": "guftgu",
   "version": "0.0.1",
   "type": "module",
+  "private": true,
+  "author": "Ajay Sharma",
+  "license": "ISC",
   "scripts": {
     "dev": "vite --port 5173 --host",
     "build": "vite build",
