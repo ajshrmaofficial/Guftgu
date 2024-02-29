@@ -3,13 +3,30 @@
   "version": "0.0.1",
   "description": "Welcome to the collaborative hub for building Guftgu, a chat app designed to foster meaningful connections and conversations.",
   "private": "true",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/**"
+    ]
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "scripts": {
+    "webDev": "lerna run webDev",
+    "webBuild": "lerna run webBuild",
+    "backendDev": "lerna run backendDev",
+    "rnStart": "lerna run rnStart",
+    "android": "lerna run android",
+    "ios": "lerna run ios",
+    "rnLint": "lerna run rnLint",
+    "rnTest": "lerna run rnTest",
+    "reset": "find . -type dir -name node_modules | xargs rm -rf && rm -rf yarn.lock"
+  },
   "keywords": [],
   "author": "Ajay Sharma",
-  "license": "GNU"
+  "license": "GNU",
+  "dependencies": {},
+  "devDependencies": {
+    "lerna": "^8.1.2"
+  }
 }
