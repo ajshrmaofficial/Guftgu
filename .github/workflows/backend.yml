@@ -12,13 +12,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Login to Heroku
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HEROKU_APP_NAME: ${{ vars.HEROKU_APP_NAME }}
-          HEROKU_EMAIL: ${{ vars.HEROKU_EMAIL }}
-        run: heroku container:login
-
+      
       - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
@@ -48,12 +42,11 @@ jobs:
           cd ./packages/backend
           docker tag backend_api backendapi:backend_api
 
-      - name: Push Docker image to Heroku container registry
+      - name: Heroku Actions - login, push, and release
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
           cd ./packages/backend
+          heroku container:login
           heroku container:push --app backendapi-git backendapi
-
-      - name: Release the image to Heroku
-        run: |
-          cd ./packages/backend
           heroku container:release --app backendapi-git web
