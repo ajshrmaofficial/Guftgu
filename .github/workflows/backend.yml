@@ -32,11 +32,10 @@ jobs:
      # - name: Login to Docker Hub (replace with your credentials)
       #  run: echo $DOCKER_USERNAME:$DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
 
-      - name: Change Dir to packages/backend
-        run: cd packages/backend/
-
       - name: Build Docker image
-        run: docker-compose build
+        run: |
+          cd ./packages/backend
+          docker-compose build
 
       - name: Tag the image for Heroku
         run: docker tag api_container backendapi:api_container
