@@ -39,9 +39,9 @@ jobs:
       - name: Push Docker image to Heroku container registry
         run: heroku container:push --app backendapi api_container
 
-     # - env:
-    #      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:release --app backendapi web
+      - env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
           # Deploy the container to Heroku (replace with your deployment command)
-          #heroku container:release --app <your_heroku_app_name> web
+          heroku container:release --app backendapi web
 
