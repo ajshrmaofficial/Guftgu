@@ -49,4 +49,4 @@ jobs:
           cd ./packages/backend
           heroku container:login
           heroku container:push --app backendapi-git backendapi
-          heroku container:release --app backendapi-git web
+          heroku container:release
