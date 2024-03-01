@@ -40,12 +40,12 @@ jobs:
       - name: Tag the image for Heroku
         run: |
           cd ./packages/backend
-          docker tag api_container backendapi:api_container
+          docker tag backend_api backendapi:backend_api
 
       - name: Push Docker image to Heroku container registry
         run: |
           cd ./packages/backend
-          heroku container:push --app backendapi api_container
+          heroku container:push --app backendapi backendapi
 
       - env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
