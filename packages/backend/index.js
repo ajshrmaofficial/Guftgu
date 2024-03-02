@@ -7,7 +7,7 @@ const { sessionMiddleware, redisClient } = require('./auth/sessionManager')
 const authRouter = require('./auth/authRouter')
 
 var httpServer // setup for https server in production
-if(process.env.NODE_ENV === 'production' && process.env.USING_HEROKU === 'false'){
+if(process.env.USING_HEROKU === 'false'){
     const fs = require('fs')
     const https = require('https')
     const privateKey = fs.readFileSync('./privkey.pem', 'utf8')
