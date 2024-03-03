@@ -48,7 +48,7 @@ jobs:
         run: |
           cd ./packages/backend
           heroku container:login
-          heroku container:push web
-          heroku container:release web  
+          heroku container:push web --app backednapi-git
+          heroku container:release web --app backendapi-git
         # heroku container:release --app backendapi-git backendapi
         # heroku container:push --app backendapi-git backendapi
