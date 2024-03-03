@@ -29,19 +29,6 @@ jobs:
             exit 0
           fi
 
-     # - name: Login to Docker Hub (replace with your credentials)
-      #  run: echo $DOCKER_USERNAME:$DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
-
-      - name: Build Docker image
-        run: |
-          cd ./packages/backend
-          docker-compose build
-
-      # - name: Tag the image for Heroku
-      #   run: |
-      #     cd ./packages/backend
-      #     docker tag backend_api registry.heroku.com/backendapi-git/web
-
       - name: Heroku Actions - login, push, and release
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
@@ -50,5 +37,3 @@ jobs:
           heroku container:login
           heroku container:push web --app backendapi-git
           heroku container:release web --app backendapi-git
-        # heroku container:release --app backendapi-git backendapi
-        # heroku container:push --app backendapi-git backendapi
