@@ -7,7 +7,7 @@ const { sessionMiddleware, redisClient } = require('./auth/sessionManager')
 const authRouter = require('./auth/authRouter')
 
 var httpServer // setup for https server in production
-if(process.env.USING_HEROKU === 'false'){
+if(process.env.USING_HEROKU === 'false'){ // if not using heroku, use https (because heroku provides ssl certificate for free, so no need to use https in heroku deployment)
     const fs = require('fs')
     const https = require('https')
     const privateKey = fs.readFileSync('./privkey.pem', 'utf8')
