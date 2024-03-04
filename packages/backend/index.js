@@ -67,7 +67,7 @@ chatNamespace.on('connection', (socket)=>{
     console.log(`A user connected to chat namespace: ${socket.id} ${socket.username}`)
     socket.on('chat message', (message)=>{
         console.log(`Recieved message from ${socket.username}: `, message)
-        chatNamespace.emit('chat message', {message, fromID: socket.id, fromUsername: socket.username})
+        socket.broadcast.emit('chat message', {message, fromID: socket.id, fromUsername: socket.username})
     })
 })
 
