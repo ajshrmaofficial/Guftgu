@@ -69,6 +69,10 @@ chatNamespace.on('connection', (socket)=>{
         console.log(`Recieved message from ${socket.username}: `, message)
         socket.broadcast.emit('chat message', {message, fromID: socket.id, fromUsername: socket.username})
     })
+    socket.on('location', (location)=>{
+        console.log(`Location recieved from ${socket.username}: `, location)
+        socket.broadcast.emit('location', {location, fromUsername: socket.username})
+    })
 })
 
 chatNamespace.use((socket, next)=>{
