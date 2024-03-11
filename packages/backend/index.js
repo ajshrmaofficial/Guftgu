@@ -70,6 +70,7 @@ chatNamespace.on("connection", (socket) => {
   console.log(
     `A user connected to chat namespace: ${socket.id} ${socket.username}`,
   );
+  socket.join(socket.username);
   socket.on("mehfil", (message) => {
     console.log(`Recieved message from ${socket.username}: `, message);
     socket.broadcast.emit("mehfil", {
