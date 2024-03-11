@@ -4,10 +4,13 @@ import Login from "../../screens/Login";
 import Register from "../../screens/Register";
 import Guftgu from "../../screens/Guftgu";
 import Mehfil from "../../screens/Mehfil";
-import { NavStackParamList } from "./NavigationStackTypes";
+import { NavStackParamList, NavTabParamList } from "./NavigationStackTypes";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import Map from "../../screens/Map";
 
 const AuthStack = createNativeStackNavigator<NavStackParamList>();
-const AppStack = createNativeStackNavigator<NavStackParamList>();
+// const AppStack = createNativeStackNavigator<NavStackParamList>();
+const AppStack = createBottomTabNavigator<NavTabParamList>();
 
 function AuthNavigationStack(): React.JSX.Element {
     return (
@@ -18,11 +21,21 @@ function AuthNavigationStack(): React.JSX.Element {
     )
 }
 
+// function AppNavigationStack(): React.JSX.Element {
+//     return (
+//         <AppStack.Navigator screenOptions={{headerShown: false}}>
+//             <AppStack.Screen name="Guftgu" component={Guftgu} />
+//             <AppStack.Screen name="Mehfil" component={Mehfil} />
+//         </AppStack.Navigator>
+//     )
+// }
+
 function AppNavigationStack(): React.JSX.Element {
     return (
         <AppStack.Navigator screenOptions={{headerShown: false}}>
             <AppStack.Screen name="Guftgu" component={Guftgu} />
             <AppStack.Screen name="Mehfil" component={Mehfil} />
+            <AppStack.Screen name="Map" component={Map} />
         </AppStack.Navigator>
     )
 }
