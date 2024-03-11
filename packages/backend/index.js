@@ -72,7 +72,7 @@ chatNamespace.on("connection", (socket) => {
   );
   socket.on("mehfil", (message) => {
     console.log(`Recieved message from ${socket.username}: `, message);
-    socket.broadcast.emit("chat message", {
+    socket.broadcast.emit("mehfil", {
       message,
       fromID: socket.id,
       fromUsername: socket.username,
