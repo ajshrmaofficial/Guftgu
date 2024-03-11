@@ -12,7 +12,7 @@ function Navigator(): React.JSX.Element {
 
     return (
         <NavigationContainer theme={theme}>
-            {authData?.token ? <AppNavigationStack/> : <AuthNavigationStack/>}
+            {authData?.authToken ? <AppNavigationStack/> : <AuthNavigationStack/>}
         </NavigationContainer>
     )
 }
