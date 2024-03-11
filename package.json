@@ -20,6 +20,7 @@
     "ios": "lerna run ios",
     "rnLint": "lerna run rnLint",
     "rnTest": "lerna run rnTest",
+    "postversion": "cd packages/app/android && ./gradlew bundleRelease",
     "reset": "find . -type dir -name node_modules | xargs rm -rf && rm -rf yarn.lock"
   },
   "keywords": [],
