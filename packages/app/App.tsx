@@ -3,6 +3,7 @@ import {AuthProvider} from './src/utility/context/AuthContext';
 import Navigator from './src/utility/navigation/Navigator';
 import {AppThemeProvider} from './src/utility/context/ThemeContext';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {UserProvider} from './src/utility/context/UserContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,7 +22,9 @@ function App(): React.JSX.Element {
     <QueryClientProvider client={queryClient}>
       <AppThemeProvider>
         <AuthProvider>
-          <Navigator />
+          <UserProvider>
+            <Navigator />
+          </UserProvider>
         </AuthProvider>
       </AppThemeProvider>
     </QueryClientProvider>
