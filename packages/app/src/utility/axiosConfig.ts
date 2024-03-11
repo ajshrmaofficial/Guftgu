@@ -3,7 +3,7 @@ import {SERVER_IP} from "@env";
 
 console.log("SERVER_IP:", SERVER_IP);
 const server: AxiosInstance = axios.create({
-    baseURL: SERVER_IP,
+    baseURL: "https://backendapi-git-9e847d31bc95.herokuapp.com",
     headers: {
         "Content-Type": "application/json",
     }
