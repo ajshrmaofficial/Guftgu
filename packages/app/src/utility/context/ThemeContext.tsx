@@ -5,8 +5,8 @@ import { useColorScheme } from "react-native";
 interface ThemeContextData {
     systemThemeSelected: boolean;
     setSystemThemeSelected: React.Dispatch<React.SetStateAction<boolean>>;
-    theme: Theme;
-    themeName: string;
+    theme: Theme | undefined;
+    // themeName: string | undefined;
     toggleTheme: (theme: string) => void;
 }
 
@@ -15,13 +15,13 @@ const ThemeContext = createContext<ThemeContextData>({} as ThemeContextData);
 function AppThemeProvider({children}: {children: React.ReactNode}): React.JSX.Element {
     
     const userScheme = useColorScheme();
-    const [systemThemeSelected, setSystemThemeSelected] = useState<boolean>(false);
-    const [theme, setTheme] = useState<Theme>(systemThemeSelected && userScheme === "light" ? DefaultTheme : DarkTheme);
-    const [themeName, setThemeName] = useState<string>(systemThemeSelected && userScheme === "light" ? "light" : "dark");
+    const [systemThemeSelected, setSystemThemeSelected] = useState<boolean>(true);
+    const [theme, setTheme] = useState<Theme>();
+    // const [themeName, setThemeName] = useState<string>();
 
     useEffect(()=>{
         if(systemThemeSelected) {
-            setThemeName(userScheme === "dark" ? "dark" : "light");
+            // setThemeName(userScheme === "dark" ? "dark" : "light");
             setTheme(userScheme === "dark" ? DarkTheme : DefaultTheme);
         } else {
             return;
@@ -31,17 +31,17 @@ function AppThemeProvider({children}: {children: React.ReactNode}): React.JSX.El
     const toggleTheme = (themeName: string): void => {
         if(themeName === "light") {
             setTheme(DefaultTheme);
-            setThemeName("light");
+            // setThemeName("light");
         } else if(themeName === "dark") {
             setTheme(DarkTheme);
-            setThemeName("dark");
+            // setThemeName("dark");
         } else {
             return;
         }
     }
     
     return (
-        <ThemeContext.Provider value={{ systemThemeSelected, setSystemThemeSelected, theme, themeName, toggleTheme }}>
+        <ThemeContext.Provider value={{ systemThemeSelected, setSystemThemeSelected, theme, toggleTheme }}>
             {children}
         </ThemeContext.Provider>
     )
