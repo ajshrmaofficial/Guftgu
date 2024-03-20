@@ -28,6 +28,7 @@ end
 target 'Guftgu' do
   rn_maps_path = '../node_modules/react-native-maps'
   pod 'react-native-google-maps', :path => rn_maps_path
+  pod 'simdjson', path: '../node_modules/@nozbe/simdjson', modular_headers: true
   config = use_native_modules!
 
   use_react_native!(
