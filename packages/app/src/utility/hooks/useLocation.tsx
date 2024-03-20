@@ -1,7 +1,7 @@
 import Geolocation from '@react-native-community/geolocation';
 import {useUser} from '../context/UserContext';
 import {useEffect, useState} from 'react';
-import {PermissionsAndroid} from 'react-native';
+import {PermissionsAndroid, Platform} from 'react-native';
 import {chatSocket} from '../socket/socketConfig';
 import {useAuth} from '../context/AuthContext';
 
@@ -25,9 +25,15 @@ export default function useLocation(): LocationData {
 
   const checkLocationPermission = async () => {
     console.log('checking...');
-    const alreadyHavePermission = await PermissionsAndroid.check(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-    );
+    let alreadyHavePermission;
+    if (Platform.OS === 'android') {
+      alreadyHavePermission = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      );
+    }
+    if (Platform.OS === 'ios') {
+      alreadyHavePermission = true;
+    }
     if (alreadyHavePermission) {
       setLocationPermission(true);
       return true;
@@ -59,7 +65,7 @@ export default function useLocation(): LocationData {
           return;
         }
         Geolocation.getCurrentPosition(
-          (data: { coords: { latitude: any; longitude: any; } }) => {
+          (data: {coords: {latitude: any; longitude: any}}) => {
             addMyLocation({
               ...myLocation,
               latitude: data.coords.latitude,
