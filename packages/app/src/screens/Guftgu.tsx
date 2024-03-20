@@ -8,8 +8,7 @@ import {
 } from '../utility/socket/socketConfig';
 import {Event, useSocketEvents} from '../utility/socket/useSocketEvents';
 import {useUser} from '../utility/context/UserContext';
-import useLocation from '../utility/hooks/useLocation';
-
+// import useLocation from '../utility/hooks/useLocation';
 interface Message {
   // TODO: Temporarily made, maybe to be modified/moved later
   username: string;
@@ -19,7 +18,7 @@ interface Message {
 function Guftgu(): React.JSX.Element {
   const {authData} = useAuth();
   const {setFriendLocations} = useUser();
-  const {} = useLocation();
+  // const {} = useLocation();
   const myUsername = authData.username || 'me';
   const [messages, setMessages] = useState<Message[]>([] as Message[]);
   const [currMessage, setCurrMessage] = useState<string>('');
@@ -81,7 +80,7 @@ function Guftgu(): React.JSX.Element {
     if (!currMessage || !authData.username) {
       return;
     }
-    chatSocket.emit('chat message', {
+    chatSocket.emit('guftgu', {
       message: currMessage,
       toUsername: friendUsername,
     });
@@ -109,12 +108,12 @@ function Guftgu(): React.JSX.Element {
 
   return (
     <View className="h-full w-full">
-      <Text className="text-2xl font-bold m-2">Guftgu</Text>
+      <Text className="text-2xl font-bold m-2 text-white">Guftgu</Text>
       {!friendFound ? (
         <View className="items-center">
           <TextInput
             placeholder="Friend Username"
-            className="border-2 border-white rounded-md w-3/4 p-2 mb-2"
+            className="border-2 border-white rounded-md w-3/4 p-2 mb-2 text-white"
             value={friendUsername}
             onChangeText={text => setFriendUsername(text)}
           />
@@ -126,6 +125,7 @@ function Guftgu(): React.JSX.Element {
         </View>
       ) : (
         <>
+        <Text className='text-white'>Chatting with {friendUsername}</Text>
           {messages.map((item: Message, index) => (
             <View
               className={`w-3/4 border border-white rounded-md ${
