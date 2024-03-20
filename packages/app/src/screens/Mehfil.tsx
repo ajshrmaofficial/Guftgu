@@ -63,13 +63,13 @@ function Mehfil(): React.JSX.Element {
     setCurrMessage('');
   };
 
-  useEffect(() => {
-    if (!authData.authToken || !authData.username) {
-      return;
-    }
-    setSocketUsername(authData.username);
-    connectChatSocket();
-  }, []);
+  // useEffect(() => {
+  //   if (!authData.authToken || !authData.username) {
+  //     return;
+  //   }
+  //   setSocketUsername(authData.username);
+  //   connectChatSocket();
+  // }, []);
 
   return (
     <View className="h-full w-full">
