@@ -1,6 +1,6 @@
 import React from 'react';
-import {PermissionsAndroid, StyleSheet, Text, View} from 'react-native';
-import MapView, {Marker} from 'react-native-maps';
+import {PermissionsAndroid, Platform, StyleSheet, Text, View} from 'react-native';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useUser} from '../utility/context/UserContext';
 import useLocation from '../utility/hooks/useLocation';
 import {TouchableOpacity} from 'react-native';
@@ -15,7 +15,8 @@ function Map(): React.JSX.Element {
   const {errorMsg, isLoading} = useLocation();
 
   const grantLocationPermission = async () => {
-    try {
+    if(Platform.OS === 'android') {
+      try {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       );
@@ -27,6 +28,9 @@ function Map(): React.JSX.Element {
     } catch (error) {
       console.log('Error', error);
       setLocationPermission(false);
+    }} 
+    else {
+      setLocationPermission(true);
     }
   };
 
@@ -45,6 +49,7 @@ function Map(): React.JSX.Element {
         <>
           <MapView
             style={styles.map}
+            provider={PROVIDER_GOOGLE}
             showsUserLocation={true}
             initialRegion={myLocation}
             region={myLocation}
