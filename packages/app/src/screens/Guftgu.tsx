@@ -105,7 +105,7 @@ function Guftgu(): React.JSX.Element {
 
   const fetchMessages = async (username: string) => {
     try {
-      const chats: MessageModel[] = await getChats(username, 0, 10) as MessageModel[]; // TODO: Replace hardcoded username, with username according to chat currently selected
+      const chats: MessageModel[] = await getChats(username, 0, 10) as MessageModel[];
       console.log(chats);
       chats.map((chat)=>{
         setMessages(prev => [
