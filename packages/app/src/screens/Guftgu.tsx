@@ -8,10 +8,12 @@ import {
 } from '../utility/socket/socketConfig';
 import {Event, useSocketEvents} from '../utility/socket/useSocketEvents';
 import {useUser} from '../utility/context/UserContext';
+import { saveChat, getChats } from '../utility/dbModel/db';
+import { Message as MessageModel } from '../utility/dbModel/dbModel';
 // import useLocation from '../utility/hooks/useLocation';
 interface Message {
-  // TODO: Temporarily made, maybe to be modified/moved later
-  username: string;
+  senderUsername: string;
+  receiverUsername: string;
   message: string;
 }
 
@@ -19,7 +21,7 @@ function Guftgu(): React.JSX.Element {
   const {authData} = useAuth();
   const {setFriendLocations} = useUser();
   // const {} = useLocation();
-  const myUsername = authData.username || 'me';
+  const myUsername = 'me';
   const [messages, setMessages] = useState<Message[]>([] as Message[]);
   const [currMessage, setCurrMessage] = useState<string>('');
   const [error, setError] = useState<string | null>('');
@@ -50,7 +52,8 @@ function Guftgu(): React.JSX.Element {
         fromUsername: string;
       }) {
         console.log(message, fromUsername);
-        setMessages(prev => [...prev, {message, username: fromUsername}]);
+        saveChat(fromUsername, myUsername, message);
+        setMessages(prev => [...prev, {message, senderUsername: fromUsername, receiverUsername: myUsername}]);
       },
     },
     {
@@ -76,7 +79,7 @@ function Guftgu(): React.JSX.Element {
   ];
   useSocketEvents(events);
 
-  const sendMessage = (): void => {
+  const sendMessage = async () => {
     if (!currMessage || !authData.username) {
       return;
     }
@@ -84,9 +87,10 @@ function Guftgu(): React.JSX.Element {
       message: currMessage,
       toUsername: friendUsername,
     });
+    await saveChat(myUsername, friendUsername, currMessage);
     setMessages(prev => [
       ...prev,
-      {message: currMessage, username: myUsername},
+      {message: currMessage, senderUsername: myUsername, receiverUsername: friendUsername},
     ]);
     setCurrMessage('');
   };
@@ -95,8 +99,24 @@ function Guftgu(): React.JSX.Element {
     if (!friendUsername || !authData.username) {
       return;
     }
+    fetchMessages(friendUsername);
     setFriendFound(true);
   };
+
+  const fetchMessages = async (username: string) => {
+    try {
+      const chats: MessageModel[] = await getChats(username, 0, 10) as MessageModel[]; // TODO: Replace hardcoded username, with username according to chat currently selected
+      console.log(chats);
+      chats.map((chat)=>{
+        setMessages(prev => [
+          ...prev,
+          {message: chat.message, senderUsername: chat.senderUsername, receiverUsername: chat.receiverUsername},
+        ]);
+      })
+    } catch (error) {
+     console.log(error) 
+    }
+  }
 
   useEffect(() => {
     if (!authData.authToken || !authData.username) {
@@ -120,7 +140,7 @@ function Guftgu(): React.JSX.Element {
           <TouchableOpacity
             onPress={() => findFriend()}
             className="border-2 border-white p-2 w-1/4 rounded-md justify-center">
-            <Text>Find</Text>
+            <Text className='text-white'>Find</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -129,24 +149,24 @@ function Guftgu(): React.JSX.Element {
           {messages.map((item: Message, index) => (
             <View
               className={`w-3/4 border border-white rounded-md ${
-                item.username === authData.username ? 'self-end' : 'self-start'
+                item.senderUsername === myUsername ? 'self-end' : 'self-start'
               }`}
               key={index}>
-              <Text className="text-sm text-slate-500">{item.username}</Text>
+              {item.senderUsername != myUsername && <Text className="text-sm text-slate-500">{item.senderUsername}</Text>}
               <Text className="text-base text-white">{item.message}</Text>
             </View>
           ))}
           <View className="absolute bottom-2 flex-row items-center justify-between w-full">
             <TextInput
               placeholder="Message"
-              className="border-2 border-white rounded-md w-4/5 p-2"
+              className="border-2 border-white rounded-md w-4/5 p-2 text-white"
               value={currMessage}
               onChangeText={text => setCurrMessage(text)}
             />
             <TouchableOpacity
               onPress={sendMessage}
               className="border-2 border-white p-2 rounded-md h-full justify-center">
-              <Text>Send</Text>
+              <Text className='text-white'>Send</Text>
             </TouchableOpacity>
           </View>
         </>
