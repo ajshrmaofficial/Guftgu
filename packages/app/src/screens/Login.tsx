@@ -29,13 +29,13 @@ function Login({navigation}: NavStackProps<'Login'>): React.JSX.Element {
           <Text className="text-4xl absolute m-3 self-start">Login</Text>
           <View className="w-2/3 h-full justify-center items-center">
             <TextInput
-              className="border border-white rounded-md w-full mb-4"
+              className="border border-white rounded-md w-full mb-4 text-white"
               placeholder="Username"
               value={username}
               onChangeText={text => setUsername(text)}
             />
             <TextInput
-              className="border border-white rounded-md w-full mb-5"
+              className="border border-white rounded-md w-full mb-5 text-white"
               placeholder="Password"
               value={password}
               onChangeText={text => setPassword(text)}
@@ -43,7 +43,7 @@ function Login({navigation}: NavStackProps<'Login'>): React.JSX.Element {
             <TouchableOpacity
               className="border border-white rounded-md w-2/3 p-2 items-center"
               onPress={!loading && submitCredentials}>
-              <Text>Submit</Text>
+              <Text className='text-white'>Submit</Text>
             </TouchableOpacity>
             <Text>
               Doesn't have an account?{' '}
