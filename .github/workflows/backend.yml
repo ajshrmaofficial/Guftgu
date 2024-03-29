@@ -2,7 +2,7 @@ name: Deploy Backend
 
 on:
   push:
-    branches: [ backend_jwt ]
+    branches: [ main ]
   pull_request:
 
 jobs:
@@ -35,5 +35,5 @@ jobs:
         run: |
           cd ./packages/backend
           heroku container:login
-          heroku container:push web --app backendapi-git
-          heroku container:release web --app backendapi-git
+          heroku container:push web --app guftgu-prod
+          heroku container:release web --app guftgu-prod
