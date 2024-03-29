@@ -8,7 +8,7 @@ const sessionManager = require("./sessionManager");
 const errorHandler = require("../utils/errorHandler");
 const { tryCatch } = require("../utils/tryCatch");
 const { USER_NOT_FOUND, MISSING_FIELDS, INVALID_CREDENTIALS, USERNAME_TAKEN } = require("../utils/errorCodes");
-const AppError = require("../utils/appError");
+const AppError = require("../utils/appErrorClass");
 const redisClient = sessionManager.redisClient;
 const jwt = require("jsonwebtoken");
 
