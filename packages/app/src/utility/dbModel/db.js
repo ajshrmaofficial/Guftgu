@@ -32,7 +32,7 @@ const getChats = async (otherUsername, page, pageSize) => {
   const messageCollection = database.collections.get('messages');
   const messages = await messageCollection.query(
     Q.unsafeSqlQuery(
-      `SELECT * FROM messages WHERE (sender_username = ? AND receiver_username = ?) OR (sender_username = ? AND receiver_username = ?) ORDER BY created_at ASC LIMIT ? OFFSET ?`, ["me", otherUsername, otherUsername, "me", pageSize, page * pageSize]
+      `SELECT * FROM messages WHERE (sender_username = ? AND receiver_username = ?) OR (sender_username = ? AND receiver_username = ?) ORDER BY created_at DESC LIMIT ? OFFSET ?`, ["me", otherUsername, otherUsername, "me", pageSize, page * pageSize]
     )
   ).fetch();
 

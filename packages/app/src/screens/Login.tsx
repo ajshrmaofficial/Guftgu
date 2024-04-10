@@ -1,16 +1,25 @@
 import React, {useState} from 'react';
 import {Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {useAuth} from '../utility/context/AuthContext';
-import {NavStackProps} from '../utility/navigation/NavigationStackTypes';
+import { useAuthFunctions } from '../utility/definitionStore';
+import {AuthStackProps} from '../utility/navigation/NavigationStackTypes';
+import Loader from '../components/Loader';
+import { useTheme } from '@react-navigation/native';
 
-function Login({navigation}: NavStackProps<'Login'>): React.JSX.Element {
+function Login({navigation}: AuthStackProps<"Login">): React.JSX.Element {
+  const {login} = useAuthFunctions();
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const {colors} = useTheme();
 
-  const {login, loading, err} = useAuth();
-
-  const submitCredentials = () => {
-    login(username, password);
+  const submitCredentials = async () => {
+    setLoading(true);
+    const res = await login(username, password);
+    if (res) {
+      setError('Incorrect Credentials !!');
+    }
+    setLoading(false);
   };
 
   const navigateSignup = () => {
@@ -20,37 +29,40 @@ function Login({navigation}: NavStackProps<'Login'>): React.JSX.Element {
   return (
     <>
       {loading && (
-        <View>
-          <Text className="text-4xl">Loading...</Text>
-        </View>
+        <Loader/>
       )}
       {!loading && (
         <View className="items-center">
-          <Text className="text-4xl absolute m-3 self-start">Login</Text>
+          <Text style={{color: colors.text}} className="text-4xl absolute m-3 self-start">Login</Text>
           <View className="w-2/3 h-full justify-center items-center">
             <TextInput
-              className="border border-white rounded-md w-full mb-4 text-white"
+              className="border rounded-md w-full mb-4"
+              style={{color: colors.text}}
               placeholder="Username"
+              placeholderTextColor={colors.text}
               value={username}
               onChangeText={text => setUsername(text)}
             />
             <TextInput
-              className="border border-white rounded-md w-full mb-5 text-white"
+              className="border rounded-md w-full mb-5"
+              style={{color: colors.text}}
               placeholder="Password"
+              placeholderTextColor={colors.text}
               value={password}
               onChangeText={text => setPassword(text)}
             />
             <TouchableOpacity
-              className="border border-white rounded-md w-2/3 p-2 items-center"
+              className="border rounded-md w-2/3 p-2 items-center"
               onPress={!loading && submitCredentials}>
-              <Text className='text-white'>Submit</Text>
+              <Text style={{color: colors.text}}>Submit</Text>
             </TouchableOpacity>
-            <Text>
+            <Text style={{color: colors.text}}>
               Doesn't have an account?{' '}
               <TouchableOpacity onPress={navigateSignup}>
-                <Text>SignUp</Text>
+                <Text style={{color: colors.text}}>SignUp</Text>
               </TouchableOpacity>
             </Text>
+            <Text className="text-red-500">{error}</Text>
           </View>
         </View>
       )}

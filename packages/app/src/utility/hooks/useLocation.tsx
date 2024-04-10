@@ -4,6 +4,8 @@ import {useEffect, useState} from 'react';
 import {PermissionsAndroid, Platform} from 'react-native';
 import {chatSocket} from '../socket/socketConfig';
 import {useAuth} from '../context/AuthContext';
+import { useAppGetState, useAppSetState } from '../redux/useAppState';
+import { addMyLocation, setLocationPermission } from '../redux/userSlice';
 
 interface LocationData {
   isLocationPermission: boolean;
@@ -14,14 +16,16 @@ interface LocationData {
 export default function useLocation(): LocationData {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const {authData} = useAuth();
-  const {username} = authData;
-  const {
-    myLocation,
-    addMyLocation,
-    isLocationPermission,
-    setLocationPermission,
-  } = useUser();
+  
+  // const {
+  //   myLocation,
+  //   addMyLocation,
+  //   isLocationPermission,
+  //   setLocationPermission,
+  // } = useUser();
+  const myLocation = useAppGetState(state => state.user.myLocation)
+  const locationPermission = useAppGetState(state => state.user.locationPermission)
+  const setState = useAppSetState();
 
   const checkLocationPermission = async () => {
     console.log('checking...');
@@ -35,7 +39,7 @@ export default function useLocation(): LocationData {
       alreadyHavePermission = true;
     }
     if (alreadyHavePermission) {
-      setLocationPermission(true);
+      setState(setLocationPermission(true));
       return true;
     } else {
       try {
@@ -43,7 +47,7 @@ export default function useLocation(): LocationData {
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         );
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          setLocationPermission(true);
+          setState(setLocationPermission(true));
           return true;
         } else {
           setErrorMsg('Location permission denied');
@@ -52,7 +56,7 @@ export default function useLocation(): LocationData {
       } catch (error) {
         setErrorMsg('Error in getting location permission');
         console.log('Error', error);
-        setLocationPermission(false);
+        setState(setLocationPermission(false));
         return false;
       }
     }
@@ -66,11 +70,13 @@ export default function useLocation(): LocationData {
         }
         Geolocation.getCurrentPosition(
           (data: {coords: {latitude: any; longitude: any}}) => {
-            addMyLocation({
-              ...myLocation,
-              latitude: data.coords.latitude,
-              longitude: data.coords.longitude,
-            });
+            setState(addMyLocation(
+              {
+                ...myLocation,
+                latitude: data.coords.latitude,
+                longitude: data.coords.longitude,
+              }
+            ))
             chatSocket.emit('location', {
               latitude: data.coords.latitude,
               longitude: data.coords.longitude,
@@ -92,7 +98,7 @@ export default function useLocation(): LocationData {
   }, []);
 
   return {
-    isLocationPermission,
+    isLocationPermission: locationPermission,
     errorMsg,
     isLoading,
   };

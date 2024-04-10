@@ -1,18 +1,19 @@
 import React, {useState} from 'react';
 import {Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {useAuth} from '../utility/context/AuthContext';
-import {NavStackProps} from '../utility/navigation/NavigationStackTypes';
+import { useAuthFunctions } from '../utility/definitionStore';
+import {AuthStackProps} from '../utility/navigation/NavigationStackTypes';
 
-function Register({navigation}: NavStackProps<'Register'>): React.JSX.Element {
+function Register({navigation}: AuthStackProps<"Register">): React.JSX.Element {
+  const {register} = useAuthFunctions();
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [err, setErr] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [hasLowerCase, setHasLowerCase] = useState<boolean>(false);
   const [hasUpperCase, setHasUpperCase] = useState<boolean>(false);
   const [hasNumber, setHasNumber] = useState<boolean>(false);
   const [hasSpecialChar, setHasSpecialChar] = useState<boolean>(false);
-
-  const {register, loading, err, setErr} = useAuth();
 
   const validatePassword = (text: string): void => {
     setPassword(text);
@@ -34,11 +35,13 @@ function Register({navigation}: NavStackProps<'Register'>): React.JSX.Element {
         return;
     }
     const res = await register(username, password);
-    if(res===true){
-        setTimeout(()=>{
-            navigation.navigate("Login")
-        }, 1500);
+    if(res){
+      setErr(res);
+      return;
     }
+    setTimeout(()=>{
+        navigation.navigate("Login")
+    }, 1500);
   };
 
   const navigateLogin = () => {

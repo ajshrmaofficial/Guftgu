@@ -1,17 +1,27 @@
 import React from 'react';
-import {PermissionsAndroid, Platform, StyleSheet, Text, View} from 'react-native';
+import {Dimensions, PermissionsAndroid, Platform, StatusBar, StyleSheet, Text, View} from 'react-native';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useUser} from '../utility/context/UserContext';
 import useLocation from '../utility/hooks/useLocation';
 import {TouchableOpacity} from 'react-native';
+import { mapStyle } from '../utility/definitionStore';
+import { useAppGetState, useAppSetState } from '../utility/redux/useAppState';
+import { setLocationPermission } from '../utility/redux/userSlice';
 
 function Map(): React.JSX.Element {
-  const {
-    friendLocations,
-    myLocation,
-    isLocationPermission,
-    setLocationPermission,
-  } = useUser();
+
+  const height = Dimensions.get('window').height;
+
+  // const {
+  //   friendLocations,
+  //   myLocation,
+  //   isLocationPermission,
+  //   setLocationPermission,
+  // } = useUser();
+  const friendLocations = useAppGetState(state => state.user.friendLocations);
+  const myLocation = useAppGetState(state => state.user.myLocation);
+  const isLocationPermission = useAppGetState(state => state.user.locationPermission);
+  const setState = useAppSetState()
   const {errorMsg, isLoading} = useLocation();
 
   const grantLocationPermission = async () => {
@@ -21,16 +31,16 @@ function Map(): React.JSX.Element {
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        setLocationPermission(true);
+        setState(setLocationPermission(true));
       } else {
         return;
       }
     } catch (error) {
       console.log('Error', error);
-      setLocationPermission(false);
+      setState(setLocationPermission(false));
     }} 
     else {
-      setLocationPermission(true);
+      setState(setLocationPermission(true));
     }
   };
 
@@ -49,12 +59,13 @@ function Map(): React.JSX.Element {
         <>
           <MapView
             style={styles.map}
+            customMapStyle={mapStyle}
             provider={PROVIDER_GOOGLE}
             showsUserLocation={true}
             initialRegion={myLocation}
             region={myLocation}
             followsUserLocation={true}
-            showsMyLocationButton={true}>
+            showsMyLocationButton={false}>
             {friendLocations.map((marker, index) => (
               <Marker
                 key={index}

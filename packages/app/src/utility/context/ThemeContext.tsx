@@ -13,10 +13,37 @@ interface ThemeContextData {
 const ThemeContext = createContext<ThemeContextData>({} as ThemeContextData);
 
 function AppThemeProvider({children}: {children: React.ReactNode}): React.JSX.Element {
+
+    const lightTheme = {
+        ...DefaultTheme,
+        colors: {
+            ...DefaultTheme.colors,
+            primary: "#D6D6D6",  // Very light gray (placeholder)
+            background: "#FFFFFF", // White
+            card: "#565656",       // Lighter gray than background
+            text: "#000000",       // Black
+            border: "#DDDDDD",     // Light gray border
+            notification: "#FDFDFD",  // Lighter gray notification (placeholder)
+          }
+    }
+
+    const darkTheme = {
+        ...DarkTheme,
+        colors: {
+            ...DarkTheme.colors,
+            primary: "#FFFC00",  // Bright yellow (Pantone Yellow U) - remains consistent
+            background: "#000000",  // Black
+            card: "#292929",       // Dark gray
+            text: "#FDF4DC",       // Light yellow text
+            border: "#292929",     // Dark gray border
+            notification: "#FFFC00",  // Bright yellow notification
+            secondary: "#FFFC00",  // Bright yellow secondary
+          }
+    }
     
     const userScheme = useColorScheme();
-    const [systemThemeSelected, setSystemThemeSelected] = useState<boolean>(true);
-    const [theme, setTheme] = useState<Theme>();
+    const [systemThemeSelected, setSystemThemeSelected] = useState<boolean>(false);
+    const [theme, setTheme] = useState<Theme>(lightTheme);
     // const [themeName, setThemeName] = useState<string>();
 
     useEffect(()=>{

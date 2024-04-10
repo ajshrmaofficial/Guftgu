@@ -1,25 +1,19 @@
 import React, {useEffect, useState} from 'react';
 import {Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {useAuth} from '../utility/context/AuthContext';
-import {
-  chatSocket,
-  connectChatSocket,
-  setSocketUsername,
-} from '../utility/socket/socketConfig';
+import useAuth from '../utility/hooks/useAuth';
+import {chatSocket} from '../utility/socket/socketConfig';
 import {Event, useSocketEvents} from '../utility/socket/useSocketEvents';
-
-interface Message {
-  // TODO: Temporarily made, maybe to be modified/moved later
-  username: string;
-  message: string;
-}
+import {useTheme} from '@react-navigation/native';
+import {FlashList} from '@shopify/flash-list';
+import {Message} from '../utility/definitionStore';
 
 function Mehfil(): React.JSX.Element {
-  const {authData} = useAuth();
-  const myUsername = authData.username || 'me';
+  const {username} = useAuth();
+  const myUsername = 'me';
   const [messages, setMessages] = useState<Message[]>([] as Message[]);
   const [currMessage, setCurrMessage] = useState<string>('');
   const [error, setError] = useState<string | null>('');
+  const {colors} = useTheme();
 
   const events: Event[] = [
     {
@@ -45,56 +39,72 @@ function Mehfil(): React.JSX.Element {
         fromUsername: string;
       }) {
         console.log(message, fromUsername);
-        setMessages(prev => [...prev, {message, username: fromUsername}]);
+        setMessages(prev => [
+          ...prev,
+          {message, senderUsername: fromUsername, receiverUsername: myUsername},
+        ]);
       },
     },
   ];
   useSocketEvents(events);
 
   const sendMessage = (): void => {
-    if (!currMessage || !authData.username) {
+    if (!currMessage || !username) {
       return;
     }
     chatSocket.emit('mehfil', currMessage);
     setMessages(prev => [
+      {
+        message: currMessage,
+        senderUsername: myUsername,
+        receiverUsername: 'others',
+      },
       ...prev,
-      {message: currMessage, username: myUsername},
     ]);
     setCurrMessage('');
   };
 
-  // useEffect(() => {
-  //   if (!authData.authToken || !authData.username) {
-  //     return;
-  //   }
-  //   setSocketUsername(authData.username);
-  //   connectChatSocket();
-  // }, []);
-
   return (
     <View className="h-full w-full">
-      <Text className="text-2xl font-bold m-2">Mehfil</Text>
-      {messages.map((item: Message, index) => (
-        <View
-          className={`w-3/4 border border-white rounded-md ${
-            item.username === authData.username ? 'self-end' : 'self-start'
-          }`}
-          key={index}>
-          <Text className="text-sm text-slate-500">{item.username}</Text>
-          <Text className="text-base text-white">{item.message}</Text>
-        </View>
-      ))}
-      <View className="absolute bottom-2 flex-row items-center justify-between w-full">
+      <FlashList
+        data={messages}
+        estimatedItemSize={60}
+        inverted={true}
+        renderItem={({item}) => (
+          <View
+            style={{
+              backgroundColor:
+                item.senderUsername === myUsername
+                  ? colors.primary
+                  : colors.border,
+            }}
+            className={`my-2 p-2 rounded-md ${
+              item.senderUsername === myUsername ? 'self-end' : 'self-start'
+            }`}>
+            <Text style={{color: colors.text}} className="text-base">
+              {item.message}
+            </Text>
+          </View>
+        )}
+      />
+      <View
+        style={{borderTopColor: colors.primary}}
+        className="bottom-2 border-t-2 flex-row items-center justify-around w-full h-14">
         <TextInput
           placeholder="Message"
-          className="border-2 border-white rounded-md w-4/5 p-2"
+          style={{backgroundColor: colors.primary, color: colors.text}}
+          placeholderTextColor={colors.border}
+          className="rounded-2xl w-3/5 p-2 text-sm h-9"
           value={currMessage}
           onChangeText={text => setCurrMessage(text)}
+          multiline={true}
+          returnKeyType="none"
         />
         <TouchableOpacity
           onPress={sendMessage}
-          className="border-2 border-white p-2 rounded-md h-full justify-center">
-          <Text>Send</Text>
+          style={{backgroundColor: colors.primary}}
+          className="p-2 rounded-2xl justify-center h-9">
+          <Text style={{color: colors.border}}>Send</Text>
         </TouchableOpacity>
       </View>
     </View>
