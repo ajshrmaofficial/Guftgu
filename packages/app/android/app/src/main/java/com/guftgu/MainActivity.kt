@@ -5,6 +5,7 @@ import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import android.os.Bundle;
+import androidx.core.view.WindowCompat
 
 class MainActivity : ReactActivity() {
 
@@ -16,6 +17,7 @@ class MainActivity : ReactActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(null)
+    WindowCompat.setDecorFitsSystemWindows(window, false)
   }
 
   /**
