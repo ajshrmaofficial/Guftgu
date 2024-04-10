@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {useAuth} from '../utility/context/AuthContext';
+import React, {useEffect, useRef, useState} from 'react';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import useAuth from '../utility/hooks/useAuth';
 import {
   chatSocket,
   connectChatSocket,
@@ -8,26 +8,23 @@ import {
 } from '../utility/socket/socketConfig';
 import {Event, useSocketEvents} from '../utility/socket/useSocketEvents';
 import {useUser} from '../utility/context/UserContext';
-import { saveChat, getChats } from '../utility/dbModel/db';
-import { Message as MessageModel } from '../utility/dbModel/dbModel';
+import { AppNavigationProps } from '../utility/navigation/NavigationStackTypes';
+import { FlashList } from '@shopify/flash-list';
+import { useTheme } from '@react-navigation/native';
+import { useAppSetState } from '../utility/redux/useAppState';
+import { setFriendLocations } from '../utility/redux/userSlice';
 // import useLocation from '../utility/hooks/useLocation';
-interface Message {
-  senderUsername: string;
-  receiverUsername: string;
-  message: string;
-}
 
-function Guftgu(): React.JSX.Element {
-  const {authData} = useAuth();
-  const {setFriendLocations} = useUser();
-  // const {} = useLocation();
-  const myUsername = 'me';
-  const [messages, setMessages] = useState<Message[]>([] as Message[]);
-  const [currMessage, setCurrMessage] = useState<string>('');
+function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
+  const {authToken, username} = useAuth();
+  // const {setFriendLocations} = useUser();
+  const setState = useAppSetState();
   const [error, setError] = useState<string | null>('');
-  const [friendUsername, setFriendUsername] = useState<string>('');
-  const [friendFound, setFriendFound] = useState<boolean>(false);
-
+  // const {} = useLocation();
+  const {colors} = useTheme();
+  
+  // const Friends = ["Abhishek Kumar", "Aman Kumar", "Ankit Kumar", "Anshu Kumar", "Anurag Kumar", "Ashish Kumar", "Ayush Kumar", "Deepak Kumar", "Gaurav Kumar", "Himanshu Kumar", "Karan Kumar", "Kartik Kumar", "Keshav Kumar", "Manish Kumar", "Nikhil Kumar", "Prashant Kumar", "Rahul Kumar", "Rajat Kumar", "Rajesh Kumar", "Rohit Kumar", "Sachin Kumar", "Sahil Kumar", "Sandeep Kumar", "Saurabh Kumar", "Shivam Kumar", "Shubham Kumar", "Siddharth Kumar", "Sumit Kumar", "Sunil Kumar", "Utkarsh Kumar", "Vikas Kumar", "Vishal Kumar", "Vivek Kumar", "Yogesh Kumar"];
+  const Friends: string[] = []
   const events: Event[] = [
     {
       name: 'connect_error',
@@ -43,134 +40,51 @@ function Guftgu(): React.JSX.Element {
       },
     },
     {
-      name: 'guftgu',
-      handler({
-        message,
-        fromUsername,
-      }: {
-        message: string;
-        fromUsername: string;
-      }) {
-        console.log(message, fromUsername);
-        saveChat(fromUsername, myUsername, message);
-        setMessages(prev => [...prev, {message, senderUsername: fromUsername, receiverUsername: myUsername}]);
-      },
-    },
-    {
       name: 'location',
       handler({location, fromUsername}) {
-        setFriendLocations(prev => {
-          const existingIndex = prev.findIndex(
-            item => item.title === fromUsername,
-          );
-          if (existingIndex !== -1) {
-            const newLocations = [...prev];
-            newLocations[existingIndex].latlng = location;
-            return newLocations;
-          } else {
-            return [
-              ...prev,
-              {latlng: location, title: fromUsername, description: null},
-            ];
-          }
-        });
+        setState(setFriendLocations({location, fromUsername}));
       },
     },
   ];
   useSocketEvents(events);
 
-  const sendMessage = async () => {
-    if (!currMessage || !authData.username) {
-      return;
-    }
-    chatSocket.emit('guftgu', {
-      message: currMessage,
-      toUsername: friendUsername,
-    });
-    await saveChat(myUsername, friendUsername, currMessage);
-    setMessages(prev => [
-      ...prev,
-      {message: currMessage, senderUsername: myUsername, receiverUsername: friendUsername},
-    ]);
-    setCurrMessage('');
-  };
-
-  const findFriend = (): void => {
-    if (!friendUsername || !authData.username) {
-      return;
-    }
-    fetchMessages(friendUsername);
-    setFriendFound(true);
-  };
-
-  const fetchMessages = async (username: string) => {
-    try {
-      const chats: MessageModel[] = await getChats(username, 0, 10) as MessageModel[];
-      console.log(chats);
-      chats.map((chat)=>{
-        setMessages(prev => [
-          ...prev,
-          {message: chat.message, senderUsername: chat.senderUsername, receiverUsername: chat.receiverUsername},
-        ]);
-      })
-    } catch (error) {
-     console.log(error) 
-    }
+  const openChat = (friendUsername: string) => {
+    navigation.navigate("ChatScreen", {username: friendUsername});
   }
 
   useEffect(() => {
-    if (!authData.authToken || !authData.username) {
+    if (!authToken || !username) {
       return;
     }
-    setSocketUsername(authData.username);
+    setSocketUsername(username);
     connectChatSocket();
   }, []);
 
+  function EmptyChatComponent(): React.JSX.Element {
+    return (
+      <View className='min-h-screen items-center justify-center'>
+        <Text className='text-black font-semibold text-base'>Looking very empty...</Text>
+        <TouchableOpacity>
+          <Text className='text-blue-700 font-semibold'>
+            Start a new chat
+          </Text>
+        </TouchableOpacity>
+      </View>
+    )
+  } 
+
   return (
-    <View className="h-full w-full">
-      <Text className="text-2xl font-bold m-2 text-white">Guftgu</Text>
-      {!friendFound ? (
-        <View className="items-center">
-          <TextInput
-            placeholder="Friend Username"
-            className="border-2 border-white rounded-md w-3/4 p-2 mb-2 text-white"
-            value={friendUsername}
-            onChangeText={text => setFriendUsername(text)}
-          />
-          <TouchableOpacity
-            onPress={() => findFriend()}
-            className="border-2 border-white p-2 w-1/4 rounded-md justify-center">
-            <Text className='text-white'>Find</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <>
-        <Text className='text-white'>Chatting with {friendUsername}</Text>
-          {messages.map((item: Message, index) => (
-            <View
-              className={`w-3/4 border border-white rounded-md ${
-                item.senderUsername === myUsername ? 'self-end' : 'self-start'
-              }`}
-              key={index}>
-              {item.senderUsername != myUsername && <Text className="text-sm text-slate-500">{item.senderUsername}</Text>}
-              <Text className="text-base text-white">{item.message}</Text>
-            </View>
-          ))}
-          <View className="absolute bottom-2 flex-row items-center justify-between w-full">
-            <TextInput
-              placeholder="Message"
-              className="border-2 border-white rounded-md w-4/5 p-2 text-white"
-              value={currMessage}
-              onChangeText={text => setCurrMessage(text)}
-            />
-            <TouchableOpacity
-              onPress={sendMessage}
-              className="border-2 border-white p-2 rounded-md h-full justify-center">
-              <Text className='text-white'>Send</Text>
-            </TouchableOpacity>
+    <View className='h-full w-full mt-3'>
+      <FlashList data={Friends} estimatedItemSize={70} ListEmptyComponent={EmptyChatComponent} renderItem={({item})=>(
+        <TouchableOpacity style={{borderBottomWidth: 1, borderColor: colors.primary}} onPress={()=>openChat("abhi")} className='w-full h-14 p-1'>
+        <View className='w-full flex-row items-center'>
+          <View className='h-10 w-10 justify-center items-center rounded-full bg-black'>
+            <Text className='text-base font-bold'>{item[0].toLocaleUpperCase()}</Text>
           </View>
-        </>
-      )}
+          <Text style={{color: colors.text}} className='text-base font-medium ml-3'>{item}</Text>
+        </View>
+      </TouchableOpacity>
+      )} />
     </View>
   );
 }
