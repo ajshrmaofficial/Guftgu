@@ -62,11 +62,11 @@ function ChatScreen({
     if (!currMessage || !username) {
       return;
     }
-    // chatSocket.emit('guftgu', {
-    //   message: currMessage,
-    //   toUsername: friendUsername,
-    // });
-    // await saveChat(myUsername, friendUsername, currMessage);
+    chatSocket.emit('guftgu', {
+      message: currMessage,
+      toUsername: friendUsername,
+    });
+    await saveChat(myUsername, friendUsername, currMessage);
     setMessages(prev => [
         {
           message: currMessage,
