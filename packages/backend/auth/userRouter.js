@@ -25,7 +25,7 @@ function verifyToken(req, res, next) {
 
 userRouter.use(verifyToken);
 
-userRouter.post("fetchUndeliveredMessages", tryCatch(async (req, res) => {
+userRouter.post("/fetchUndeliveredMessages", tryCatch(async (req, res) => {
     if(!req.user) throw new AppError(INVALID_CREDENTIALS.errorCode, INVALID_CREDENTIALS.message, INVALID_CREDENTIALS.statusCode);
     console.log('fetchUndeliveredMessages request received, with verified token');
     const { receiverUsername } = req.body;
@@ -36,7 +36,7 @@ userRouter.post("fetchUndeliveredMessages", tryCatch(async (req, res) => {
     res.status(200).send(undeliveredMessages);
 }));
 
-userRouter.post("fetchFriendList", tryCatch(async (req, res) => {
+userRouter.post("/fetchFriendList", tryCatch(async (req, res) => {
     if(!req.user) throw new AppError(INVALID_CREDENTIALS.errorCode, INVALID_CREDENTIALS.message, INVALID_CREDENTIALS.statusCode);
     console.log('fetchFriendList request received, with verified token');
     const { username } = req.body;
@@ -48,7 +48,7 @@ userRouter.post("fetchFriendList", tryCatch(async (req, res) => {
     res.status(200).send(friendList);
 }));
 
-userRouter.post("searchUser", tryCatch(async (req, res) => {
+userRouter.post("/searchUser", tryCatch(async (req, res) => {
     if(!req.user) throw new AppError(INVALID_CREDENTIALS.errorCode, INVALID_CREDENTIALS.message, INVALID_CREDENTIALS.statusCode);
     console.log('searchUser request received, with verified token');
     const { username } = req.body;
@@ -59,7 +59,7 @@ userRouter.post("searchUser", tryCatch(async (req, res) => {
     res.status(200).send(user);
 }));
 
-userRouter.post("addFriend", tryCatch(async (req, res) => {
+userRouter.post("/addFriend", tryCatch(async (req, res) => {
     if(!req.user) throw new AppError(INVALID_CREDENTIALS.errorCode, INVALID_CREDENTIALS.message, INVALID_CREDENTIALS.statusCode);
     console.log('addFriend request received, with verified token');
     const { username, friendUsername } = req.body;
@@ -70,7 +70,7 @@ userRouter.post("addFriend", tryCatch(async (req, res) => {
     res.status(200).send("Friend added successfully");
 }));
 
-userRouter.post("acceptFriendRequest", tryCatch(async (req, res) => {
+userRouter.post("/acceptFriendRequest", tryCatch(async (req, res) => {
     if(!req.user) throw new AppError(INVALID_CREDENTIALS.errorCode, INVALID_CREDENTIALS.message, INVALID_CREDENTIALS.statusCode);
     console.log('acceptFriendRequest request received, with verified token');
     const { username, friendUsername } = req.body;
