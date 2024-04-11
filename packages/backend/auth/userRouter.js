@@ -57,11 +57,11 @@ userRouter.post("/fetchFriendList", tryCatch(async (req, res) => {
 userRouter.post("/searchUser", tryCatch(async (req, res) => {
     if(!req.user) throw new AppError(INVALID_CREDENTIALS.errorCode, INVALID_CREDENTIALS.message, INVALID_CREDENTIALS.statusCode);
     console.log('searchUser request received, with verified token');
-    const { username } = req.body;
-    if (!username) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
+    const { username, myUsername } = req.body;
+    if (!username, !myUsername) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
 
-    const user1 = await userModel.findOne({ username: username });
-    const user2 = await userModel.findOne({ username: friendUsername });
+    const user1 = await userModel.findOne({ username: myUsername });
+    const user2 = await userModel.findOne({ username: username });
     if (!user1 || !user2) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
     
     const friend = await friendshipModel.findOne({ $or: [{user1: user1._id, user2: user2._id}, {user1: user2._id, user2: user1._id}] })
