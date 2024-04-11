@@ -55,7 +55,7 @@ function Register({navigation}: AuthStackProps<"Register">): React.JSX.Element {
       setErr("Enter valid password !!!");
       return;
     }
-    if(!nameIsValid || !name.trim()){
+    if(!nameIsValid || !name.trim() || name.length>20){
       setErr("Enter valid name !!!");
       return;
     }
