@@ -1,10 +1,11 @@
 import {Model} from '@nozbe/watermelondb';
-import {date, readonly, text, writer} from '@nozbe/watermelondb/decorators';
+import {date, readonly, text} from '@nozbe/watermelondb/decorators';
 
 class User extends Model {
   static table = 'users';
 
   @text('username') username;
+  @text('name') name;
   @text('phone') phone;
 }
 
