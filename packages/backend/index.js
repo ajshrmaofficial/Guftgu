@@ -5,6 +5,8 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { sessionMiddleware, redisClient } = require("./auth/sessionManager");
 const authRouter = require("./auth/authRouter");
+const messageModel = require("./schema/messageSchema");
+const userRouter = require("./auth/userRouter");
 
 var httpServer; // setup for https server in production
 if (process.env.USING_HEROKU === "false") {
@@ -43,6 +45,7 @@ server.use(express.urlencoded({ extended: true }));
 server.use(cookieParser());
 // server.use(sessionMiddleware)
 server.use("/auth", authRouter);
+server.use("user", userRouter);
 // io.engine.use(sessionMiddleware)
 
 // redisClient.on('connect', ()=>{
@@ -62,6 +65,7 @@ io.engine.on("connection_error", (err) => {
 });
 
 const chatNamespace = io.of("/chat");
+const users = {};
 // TODO: add authentication/authorization to chat namespace (maybe use jwt token)
 chatNamespace.on("connection", (socket) => {
   console.log(
@@ -71,6 +75,23 @@ chatNamespace.on("connection", (socket) => {
     `A user connected to chat namespace: ${socket.id} ${socket.username}`,
   );
   socket.join(socket.username);
+  users[socket.username] = socket.username;
+
+  socket.on("disconnect", () => {
+    console.log(`User ${socket.username} disconnected`);
+    delete users[socket.username];
+  });
+
+  socket.on("isOnline", (username) =>{
+    console.log(`Checking if ${username} is online`);
+    if(users[username]){
+      socket.to(socket.username).emit("isOnline", {username, isOnline: true});
+    }
+    else{
+      socket.to(socket.username).emit("isOnline", {username, isOnline: false});
+    }
+  })
+
   socket.on("mehfil", (message) => {
     console.log(`Recieved message from ${socket.username}: `, message);
     socket.broadcast.emit("mehfil", {
@@ -79,14 +100,19 @@ chatNamespace.on("connection", (socket) => {
       fromUsername: socket.username,
     });
   });
-  socket.on("guftgu", ({ message, toUsername }) => {
+  socket.on("guftgu", async({ message, toUsername }) => {
     console.log(
       `Recieved guftgu from ${socket.username} to ${toUsername}: `,
       message,
     );
+    if(users[toUsername]){
     chatNamespace
       .to(toUsername)
       .emit("guftgu", { message, fromUsername: socket.username });
+    } else {
+      const msg = new messageModel({sender: socket.username, receiver: toUsername, message});
+      await msg.save();
+    }
   });
   socket.on("location", (location) => {
     console.log(`Location recieved from ${socket.username}: `, location);
