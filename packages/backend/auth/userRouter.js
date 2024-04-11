@@ -5,6 +5,7 @@ const { tryCatch } = require("../utils/tryCatch");
 const AppError = require("../utils/appErrorClass");
 const { MISSING_FIELDS, INTERNAL_SERVER_ERROR, INVALID_CREDENTIALS } = require("../utils/errorCodes");
 const jwt = require("jsonwebtoken");
+const userModel = require("../schema/userSchema");
 
 const userRouter = express.Router();
 
