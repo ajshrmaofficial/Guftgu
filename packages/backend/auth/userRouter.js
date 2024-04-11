@@ -60,9 +60,19 @@ userRouter.post("/searchUser", tryCatch(async (req, res) => {
     const { username } = req.body;
     if (!username) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
 
-    const user = await userModel.findOne({ username: username }).select('-passwd');
-    if (!user) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
-    res.status(200).send(user);
+    const user1 = await userModel.findOne({ username: username });
+    const user2 = await userModel.findOne({ username: friendUsername });
+    if (!user1 || !user2) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
+    
+    const friend = await friendshipModel.findOne({ $or: [{user1: user1._id, user2: user2._id}, {user1: user2._id, user2: user1._id}] })
+        .populate('user1', 'username name -_id')
+        .populate('user2', 'username name -_id'); 
+    if (friend) return res.status(200).send(friend);
+    else {
+        const friendTemp = await userModel.findOne({ username: username }).select('username name');
+        const friend = {user: friendTemp.username, name: friendTemp.name, status: 'notFriend'};
+        return res.status(200).send(friend);
+    }
 }));
 
 userRouter.post("/addFriend", tryCatch(async (req, res) => {
