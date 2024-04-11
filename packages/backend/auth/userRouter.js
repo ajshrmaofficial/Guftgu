@@ -10,7 +10,8 @@ const userRouter = express.Router();
 
 // TODO: JSON Web Token (JWT) authorization remains to be implemented
 function verifyToken(req, res, next) {
-    const bearerHeader = req.headers['Authorization'];
+    const bearerHeader = req.headers.Authorization;
+    console.log('bearerHeader:', bearerHeader);
     if (!bearerHeader) return res.status(401).send("Access Denied");
     const token = bearerHeader.split(' ')[1];
     try {
