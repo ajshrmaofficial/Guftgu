@@ -1,6 +1,6 @@
 import server from '../axiosConfig';
 import {useAppSetState} from '../redux/useAppState';
-import {setAuthToken, setAuthUsername} from '../redux/authSlice';
+import {setAuthName, setAuthToken, setAuthUsername} from '../redux/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect } from 'react';
 import { Dimensions } from 'react-native';
@@ -55,10 +55,13 @@ export function useAuthFunctions() {
         passwd: password,
       });
       if (response.status === 200) {
+        console.log(response.data)
         setState(setAuthToken(response.data.authToken));
         setState(setAuthUsername(username));
+        setState(setAuthName(response.data.name))
         // setAuthData({authToken: response.data.authToken, username: username});
         AsyncStorage.setItem('authToken', response.data.authToken);
+        AsyncStorage.setItem('name', response.data.name);
         AsyncStorage.setItem('username', username);
         return null;
       } else {
@@ -70,11 +73,12 @@ export function useAuthFunctions() {
     }
   };
   
-  const register = async (username: string, password: string) => { // This function is used to register the user
+  const register = async (username: string, password: string, name: string) => { // This function is used to register the user
     try {
       const response = await server.post('/auth/register', {
         username: username,
         passwd: password,
+        name: name,
       });
       if (response.status === 201) {
         return null;
