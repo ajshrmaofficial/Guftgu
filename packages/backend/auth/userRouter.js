@@ -48,6 +48,17 @@ userRouter.post("fetchFriendList", tryCatch(async (req, res) => {
     res.status(200).send(friendList);
 }));
 
+userRouter.post("searchUser", tryCatch(async (req, res) => {
+    if(!req.user) throw new AppError(INVALID_CREDENTIALS.errorCode, INVALID_CREDENTIALS.message, INVALID_CREDENTIALS.statusCode);
+    console.log('searchUser request received, with verified token');
+    const { username } = req.body;
+    if (!username) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
+
+    const user = await userModel.findOne({ username: username }).select('-passwd');
+    if (!user) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
+    res.status(200).send(user);
+}));
+
 userRouter.post("addFriend", tryCatch(async (req, res) => {
     if(!req.user) throw new AppError(INVALID_CREDENTIALS.errorCode, INVALID_CREDENTIALS.message, INVALID_CREDENTIALS.statusCode);
     console.log('addFriend request received, with verified token');
