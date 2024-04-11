@@ -13,18 +13,25 @@ import { FlashList } from '@shopify/flash-list';
 import { useTheme } from '@react-navigation/native';
 import { useAppSetState } from '../utility/redux/useAppState';
 import { setFriendLocations } from '../utility/redux/userSlice';
+import useFetch from '../utility/hooks/useFetch';
 // import useLocation from '../utility/hooks/useLocation';
+
+interface Friend{
+  friendUsername: string;
+  friendName: string; 
+}
 
 function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
   const {authToken, username} = useAuth();
   // const {setFriendLocations} = useUser();
+  useFetch(authToken, username)
   const setState = useAppSetState();
   const [error, setError] = useState<string | null>('');
   // const {} = useLocation();
   const {colors} = useTheme();
   
-  // const Friends = ["Abhishek Kumar", "Aman Kumar", "Ankit Kumar", "Anshu Kumar", "Anurag Kumar", "Ashish Kumar", "Ayush Kumar", "Deepak Kumar", "Gaurav Kumar", "Himanshu Kumar", "Karan Kumar", "Kartik Kumar", "Keshav Kumar", "Manish Kumar", "Nikhil Kumar", "Prashant Kumar", "Rahul Kumar", "Rajat Kumar", "Rajesh Kumar", "Rohit Kumar", "Sachin Kumar", "Sahil Kumar", "Sandeep Kumar", "Saurabh Kumar", "Shivam Kumar", "Shubham Kumar", "Siddharth Kumar", "Sumit Kumar", "Sunil Kumar", "Utkarsh Kumar", "Vikas Kumar", "Vishal Kumar", "Vivek Kumar", "Yogesh Kumar"];
-  const Friends: string[] = []
+  // const Friends: Friend[] = [{friendName: "Abhishek Kumar", friendUsername: "abhi"}];
+  const Friends: Friend[] = [];
   const events: Event[] = [
     {
       name: 'connect_error',
@@ -76,12 +83,12 @@ function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
   return (
     <View className='h-full w-full mt-3'>
       <FlashList data={Friends} estimatedItemSize={70} ListEmptyComponent={EmptyChatComponent} renderItem={({item})=>(
-        <TouchableOpacity style={{borderBottomWidth: 1, borderColor: colors.primary}} onPress={()=>openChat("abhi")} className='w-full h-14 p-1'>
+        <TouchableOpacity style={{borderBottomWidth: 1, borderColor: colors.primary}} onPress={()=>openChat(item.friendUsername)} className='w-full h-14 p-1'>
         <View className='w-full flex-row items-center'>
           <View className='h-10 w-10 justify-center items-center rounded-full bg-black'>
-            <Text className='text-base font-bold'>{item[0].toLocaleUpperCase()}</Text>
+            <Text className='text-base font-bold'>{item.friendName[0].toLocaleUpperCase()}</Text>
           </View>
-          <Text style={{color: colors.text}} className='text-base font-medium ml-3'>{item}</Text>
+          <Text style={{color: colors.text}} className='text-base font-medium ml-3'>{item.friendName}</Text>
         </View>
       </TouchableOpacity>
       )} />
