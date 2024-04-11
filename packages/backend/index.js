@@ -45,7 +45,7 @@ server.use(express.urlencoded({ extended: true }));
 server.use(cookieParser());
 // server.use(sessionMiddleware)
 server.use("/auth", authRouter);
-server.use("user", userRouter);
+server.use("/user", userRouter);
 // io.engine.use(sessionMiddleware)
 
 // redisClient.on('connect', ()=>{

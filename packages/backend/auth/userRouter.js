@@ -2,7 +2,6 @@ const express = require("express");
 const messageModel = require("../schema/messageSchema");
 const friendshipModel = require("../schema/friendShipSchema");
 const { tryCatch } = require("../utils/tryCatch");
-const errorHandler = require("../utils/errorHandler");
 const AppError = require("../utils/appErrorClass");
 const { MISSING_FIELDS, INTERNAL_SERVER_ERROR, INVALID_CREDENTIALS } = require("../utils/errorCodes");
 const jwt = require("jsonwebtoken");
@@ -11,7 +10,7 @@ const userRouter = express.Router();
 
 // TODO: JSON Web Token (JWT) authorization remains to be implemented
 function verifyToken(req, res, next) {
-    const bearerHeader = req.header['Authorization'];
+    const bearerHeader = req.headers['Authorization'];
     if (!bearerHeader) return res.status(401).send("Access Denied");
     const token = bearerHeader.split(' ')[1];
     try {
