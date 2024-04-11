@@ -42,7 +42,11 @@ userRouter.post("/fetchFriendList", tryCatch(async (req, res) => {
     const { username } = req.body;
     if (!username) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
 
-    const friendList = await friendshipModel.find({ $or: [{user1: username}, {user2: username}] })
+    const user = await userModel.findOne({ username: username });
+    if (!user) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
+
+
+    const friendList = await friendshipModel.find({ $or: [{user1: user._id}, {user2: user._id}] })
         .populate('user1', 'username name -_id')
         .populate('user2', 'username name -_id'); 
     res.status(200).send(friendList);
@@ -65,7 +69,11 @@ userRouter.post("/addFriend", tryCatch(async (req, res) => {
     const { username, friendUsername } = req.body;
     if (!username || !friendUsername) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
 
-    const friendship = new friendshipModel({ user1: username, user2: friendUsername });
+    const user1 = await userModel.findOne({ username: username });
+    const user2 = await userModel.findOne({ username: friendUsername });
+    if (!user1 || !user2) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
+
+    const friendship = new friendshipModel({ user1: user1._id, user2: user2._id });
     await friendship.save();
     res.status(200).send("Friend added successfully");
 }));
@@ -76,7 +84,11 @@ userRouter.post("/acceptFriendRequest", tryCatch(async (req, res) => {
     const { username, friendUsername } = req.body;
     if (!username || !friendUsername) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
 
-    const friendship = await friendshipModel.findOne({ user1: friendUsername, user2: username });
+    const user2 = await userModel.findOne({ username: username });
+    const user1 = await userModel.findOne({ username: friendUsername });
+    if (!user1 || !user2) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
+
+    const friendship = await friendshipModel.findOne({ user1: user1._id, user2: user2._id });
     friendship.status = 'accepted';
     await friendship.save();
     res.status(200).send("Friend request accepted successfully");
