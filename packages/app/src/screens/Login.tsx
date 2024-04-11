@@ -14,6 +14,7 @@ function Login({navigation}: AuthStackProps<"Login">): React.JSX.Element {
   const {colors} = useTheme();
 
   const submitCredentials = async () => {
+
     setLoading(true);
     const res = await login(username, password);
     if (res) {
@@ -50,6 +51,7 @@ function Login({navigation}: AuthStackProps<"Login">): React.JSX.Element {
               placeholderTextColor={colors.text}
               value={password}
               onChangeText={text => setPassword(text)}
+              secureTextEntry={true}
             />
             <TouchableOpacity
               className="border rounded-md w-2/3 p-2 items-center"
@@ -58,10 +60,10 @@ function Login({navigation}: AuthStackProps<"Login">): React.JSX.Element {
             </TouchableOpacity>
             <Text style={{color: colors.text}}>
               Doesn't have an account?{' '}
-              <TouchableOpacity onPress={navigateSignup}>
-                <Text style={{color: colors.text}}>SignUp</Text>
-              </TouchableOpacity>
             </Text>
+              <TouchableOpacity onPress={navigateSignup}>
+                <Text className='text-blue-700'>SignUp</Text>
+              </TouchableOpacity>
             <Text className="text-red-500">{error}</Text>
           </View>
         </View>
