@@ -7,6 +7,7 @@ const userSchema = appSchema({
             name: "users",
             columns: [
                 {name: 'username', type: 'string'},
+                {name: 'name', type: 'string'},
                 {name: 'phone', type: 'string'},
             ]
         }),
