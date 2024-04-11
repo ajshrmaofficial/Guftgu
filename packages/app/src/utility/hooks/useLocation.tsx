@@ -28,7 +28,6 @@ export default function useLocation(): LocationData {
   const setState = useAppSetState();
 
   const checkLocationPermission = async () => {
-    console.log('checking...');
     let alreadyHavePermission;
     if (Platform.OS === 'android') {
       alreadyHavePermission = await PermissionsAndroid.check(
