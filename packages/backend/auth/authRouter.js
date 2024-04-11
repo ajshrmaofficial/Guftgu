@@ -79,7 +79,7 @@ authRouter.post("/login", tryCatch(async (req, res)=>{
       //     httpOnly: true,
       //   })
       //   .end();
-      const authToken = jwt.sign({username}, process.env.JWT_SECRET, {expiresIn: "1h"});
+      const authToken = jwt.sign({username}, process.env.JWT_SECRET);
       console.log('sending data to client...', user.name)
       res.status(200).json({authToken, name: user.name});
     } else throw new AppError(INVALID_CREDENTIALS.errorCode, INVALID_CREDENTIALS.message, INVALID_CREDENTIALS.statusCode)
