@@ -35,15 +35,15 @@ authRouter.get("/isLoggedIn", async (req, res) => {
 });
 
 authRouter.post("/register", tryCatch(async (req, res) => {
-  const { username, passwd } = req.body;
-  if (!username || !passwd) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
+  const { username, passwd, name } = req.body;
+  if (!username || !passwd || !name) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
   
   const result = await userModel.isUsernameTaken(username);
   if (result) throw new AppError(USERNAME_TAKEN.errorCode, USERNAME_TAKEN.message, USERNAME_TAKEN.statusCode);
 
   var salt = await bcrypt.genSalt();
   var hashedPwd = await bcrypt.hash(passwd, salt);
-  const newUser = new userModel({ username, passwd:hashedPwd });
+  const newUser = new userModel({ username, passwd:hashedPwd, name });
   
   const userSaveResult = await newUser.save();
   if(!userSaveResult) throw new AppError(INTERNAL_SERVER_ERROR.errorCode, INTERNAL_SERVER_ERROR.message, INTERNAL_SERVER_ERROR.statusCode);
@@ -80,7 +80,7 @@ authRouter.post("/login", tryCatch(async (req, res)=>{
       //   })
       //   .end();
       const authToken = jwt.sign({username}, process.env.JWT_SECRET, {expiresIn: "1h"});
-      res.status(200).json({authToken});
+      res.status(200).json({authToken, name: user.name});
     } else throw new AppError(INVALID_CREDENTIALS.errorCode, INVALID_CREDENTIALS.message, INVALID_CREDENTIALS.statusCode)
 }));
 
