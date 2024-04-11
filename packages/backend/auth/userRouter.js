@@ -32,6 +32,7 @@ userRouter.post("/fetchUndeliveredMessages", tryCatch(async (req, res) => {
     if (!receiverUsername) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
 
     const undeliveredMessages = await messageModel.find({ receiver: receiverUsername });
+    if(undeliveredMessages.length === 0) return res.status(200).send("No undelivered messages found");
     await messageModel.deleteMany({ receiver: receiverUsername });
     res.status(200).send(undeliveredMessages);
 }));
