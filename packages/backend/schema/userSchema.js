@@ -10,7 +10,11 @@ const userSchema = new mongoose.Schema({
     passwd: {
         type: String,
         required: true,
-    }
+    },
+    name: {
+        type: String,
+        required: true,
+    },
 })
 
 userSchema.statics.isUsernameTaken = async function(username){
