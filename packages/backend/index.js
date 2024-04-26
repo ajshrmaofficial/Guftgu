@@ -66,6 +66,53 @@ io.engine.on("connection_error", (err) => {
   console.log("socket.io connection error: ", err);
 });
 
+const sendNotification = async (messageBody, screen) => {
+  if(screen === 'Mehfil'){
+    const users = await userModel.find();
+    const messageData = {
+      tokens: [],
+      notification: {
+        title: 'New message in Mehfil',
+        body: messageBody
+      },
+      data: {
+        screen: screen,
+        message: messageBody
+      }
+    }
+    users.forEach(user => {
+      if(user.fcmToken){
+        messageData.tokens.push(user.fcmToken);
+      }
+    });
+    firebase.messaging().sendEachForMulticast(messageData);
+  } else if(screen === 'Guftgu'){
+    const findUser = await userModel.findOne({username: toUsername});
+    if(findUser && findUser.fcmToken){
+      console.log('sending fcm notification to ', toUsername);
+      const messageData = {
+        token: findUser.fcmToken,
+        notification: {
+          title: 'New message from ' + socket.username,
+          body: message
+        },
+        data: {
+          screen: screen,
+          message: message,
+          fromUsername: socket.username
+        }
+      }
+      firebase.messaging().send(messageData)
+        .then((response) => {
+          console.log('Successfully sent message:', response);
+        })
+        .catch((error) => {
+          console.log('Error sending message:', error);
+        });
+    }
+  }
+}
+
 const chatNamespace = io.of("/chat");
 const users = {};
 // TODO: add authentication/authorization to chat namespace (maybe use jwt token)
@@ -96,6 +143,7 @@ chatNamespace.on("connection", (socket) => {
 
   socket.on("mehfil", (message) => {
     console.log(`Recieved message from ${socket.username}: `, message);
+    sendNotification(message, 'Mehfil');
     socket.broadcast.emit("mehfil", {
       message,
       fromID: socket.id,
@@ -107,29 +155,7 @@ chatNamespace.on("connection", (socket) => {
       `Recieved guftgu from ${socket.username} to ${toUsername}: `,
       message,
     );
-    const findUser = await userModel.findOne({username: toUsername});
-    if(findUser && findUser.fcmToken){
-      console.log('sending fcm notification to ', toUsername);
-      const messageData = {
-        token: findUser.fcmToken,
-        notification: {
-          title: 'New message from ' + socket.username,
-          body: message
-        },
-        data: {
-          screen: 'Guftgu',
-          message: message,
-          fromUsername: socket.username
-        }
-      }
-      firebase.messaging().send(messageData)
-        .then((response) => {
-          console.log('Successfully sent message:', response);
-        })
-        .catch((error) => {
-          console.log('Error sending message:', error);
-        });
-    }
+    sendNotification(message, 'Guftgu');
     if(users[toUsername]){
     chatNamespace
       .to(toUsername)
