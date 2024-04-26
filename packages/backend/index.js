@@ -94,11 +94,11 @@ const sendNotification = async (messageBody, screen, toUsername, myUsername) => 
         token: findUser.fcmToken,
         notification: {
           title: 'New message from ' + myUsername,
-          body: message
+          body: messageBody
         },
         data: {
           screen: screen,
-          message: message,
+          message: messageBody,
           fromUsername: myUsername
         }
       }
