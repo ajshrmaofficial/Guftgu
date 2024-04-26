@@ -66,7 +66,7 @@ io.engine.on("connection_error", (err) => {
   console.log("socket.io connection error: ", err);
 });
 
-const sendNotification = async (messageBody, screen) => {
+const sendNotification = async (messageBody, screen, toUsername) => {
   if(screen === 'Mehfil'){
     const users = await userModel.find();
     const messageData = {
@@ -155,7 +155,7 @@ chatNamespace.on("connection", (socket) => {
       `Recieved guftgu from ${socket.username} to ${toUsername}: `,
       message,
     );
-    sendNotification(message, 'Guftgu');
+    sendNotification(message, 'Guftgu', toUsername);
     if(users[toUsername]){
     chatNamespace
       .to(toUsername)
