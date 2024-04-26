@@ -110,7 +110,7 @@ chatNamespace.on("connection", (socket) => {
     const findUser = await userModel.findOne({username: toUsername});
     if(findUser && findUser.fcmToken){
       console.log('sending fcm notification to ', toUsername);
-      const message = {
+      const messageData = {
         token: findUser.fcmToken,
         notification: {
           title: 'New message from ' + socket.username,
@@ -122,7 +122,7 @@ chatNamespace.on("connection", (socket) => {
           fromUsername: socket.username
         }
       }
-      firebase.messaging().send(message)
+      firebase.messaging().send(messageData)
         .then((response) => {
           console.log('Successfully sent message:', response);
         })
