@@ -7,6 +7,8 @@ const { sessionMiddleware, redisClient } = require("./auth/sessionManager");
 const authRouter = require("./auth/authRouter");
 const messageModel = require("./schema/messageSchema");
 const userRouter = require("./auth/userRouter");
+const userModel = require("./schema/userSchema");
+const { firebase } = require("./utils/firebase");
 
 var httpServer; // setup for https server in production
 if (process.env.USING_HEROKU === "false") {
@@ -105,6 +107,29 @@ chatNamespace.on("connection", (socket) => {
       `Recieved guftgu from ${socket.username} to ${toUsername}: `,
       message,
     );
+    const findUser = await userModel.findOne({username: toUsername});
+    if(findUser && findUser.fcmToken){
+      console.log('sending fcm notification to ', toUsername);
+      const message = {
+        token: findUser.fcmToken,
+        notification: {
+          title: 'New message from ' + socket.username,
+          body: message
+        },
+        data: {
+          screen: 'Guftgu',
+          message: message,
+          fromUsername: socket.username
+        }
+      }
+      firebase.messaging().send(message)
+        .then((response) => {
+          console.log('Successfully sent message:', response);
+        })
+        .catch((error) => {
+          console.log('Error sending message:', error);
+        });
+    }
     if(users[toUsername]){
     chatNamespace
       .to(toUsername)
