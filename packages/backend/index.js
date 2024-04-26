@@ -66,7 +66,7 @@ io.engine.on("connection_error", (err) => {
   console.log("socket.io connection error: ", err);
 });
 
-const sendNotification = async (messageBody, screen, toUsername, username) => {
+const sendNotification = async (messageBody, screen, toUsername, myUsername) => {
   if(screen === 'Mehfil'){
     const users = await userModel.find();
     const messageData = {
@@ -93,13 +93,13 @@ const sendNotification = async (messageBody, screen, toUsername, username) => {
       const messageData = {
         token: findUser.fcmToken,
         notification: {
-          title: 'New message from ' + username,
+          title: 'New message from ' + myUsername,
           body: message
         },
         data: {
           screen: screen,
           message: message,
-          fromUsername: username
+          fromUsername: myUsername
         }
       }
       firebase.messaging().send(messageData)
@@ -155,7 +155,8 @@ chatNamespace.on("connection", (socket) => {
       `Recieved guftgu from ${socket.username} to ${toUsername}: `,
       message,
     );
-    sendNotification(message, 'Guftgu', toUsername, socket.username);
+    const myUsername = socket.username;
+    sendNotification(message, 'Guftgu', toUsername, myUsername);
     if(users[toUsername]){
     chatNamespace
       .to(toUsername)
