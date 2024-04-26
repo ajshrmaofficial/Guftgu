@@ -54,7 +54,7 @@ authRouter.post("/register", tryCatch(async (req, res) => {
 }));
 
 authRouter.post("/login", tryCatch(async (req, res)=>{
-  const { username, passwd } = req.body;
+  const { username, passwd, fcmToken } = req.body;
      if (!username || !passwd) {
     throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode)
   }
@@ -65,6 +65,10 @@ authRouter.post("/login", tryCatch(async (req, res)=>{
     console.log('login api hit...')
     if (await bcrypt.compare(passwd, user.passwd)) {
       console.log("user authenticated !!");
+      if(fcmToken) {
+        user.fcmToken = fcmToken;
+        await user.save();
+      }
       // const authToken = randomBytes(16).toString("hex");
       // sess.username = username;
       // sess.authToken = authToken;
