@@ -70,7 +70,7 @@ const sendNotification = async (messageBody, screen, toUsername, myUsername) => 
   if(screen === 'Mehfil'){
     const users = await userModel.find();
     const messageData = {
-      tokens: [],
+      token: '',
       // notification: {
       //   title: 'New message in Mehfil',
       //   body: messageBody
@@ -82,10 +82,17 @@ const sendNotification = async (messageBody, screen, toUsername, myUsername) => 
     }
     users.forEach(user => {
       if(user.fcmToken){
-        messageData.tokens.push(user.fcmToken);
+        messageData.token = user.fcmToken;
+        firebase.messaging().send(messageData)
+          .then((response) => {
+            console.log('Successfully sent message:', response);
+          })
+          .catch((error) => {
+            console.log('Error sending message:', error);
+          });
       }
     });
-    firebase.messaging().sendEachForMulticast(messageData);
+    // firebase.messaging().sendEachForMulticast(messageData);
   } else if(screen === 'Guftgu'){
     const findUser = await userModel.findOne({username: toUsername});
     if(findUser && findUser.fcmToken){
