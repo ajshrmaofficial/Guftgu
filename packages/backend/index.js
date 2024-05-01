@@ -92,15 +92,15 @@ const sendNotification = async (messageBody, screen, toUsername, myUsername) => 
       console.log('sending fcm notification to ', toUsername);
       const messageData = {
         token: findUser.fcmToken,
-        notification: {
-          title: 'New message from ' + myUsername,
-          body: messageBody
-        },
+        // notification: {
+        //   title: 'New message from ' + myUsername,
+        //   body: messageBody
+        // },
         data: {
           screen: screen,
           message: messageBody,
           fromUsername: myUsername
-        }
+        },
       }
       firebase.messaging().send(messageData)
         .then((response) => {
@@ -123,6 +123,7 @@ chatNamespace.on("connection", (socket) => {
   console.log(
     `A user connected to chat namespace: ${socket.id} ${socket.username}`,
   );
+  const myUsername = socket.username;
   socket.join(socket.username);
   users[socket.username] = socket.username;
 
@@ -143,7 +144,7 @@ chatNamespace.on("connection", (socket) => {
 
   socket.on("mehfil", (message) => {
     console.log(`Recieved message from ${socket.username}: `, message);
-    sendNotification(message, 'Mehfil');
+    sendNotification(message, 'Mehfil', '', myUsername);
     socket.broadcast.emit("mehfil", {
       message,
       fromID: socket.id,
@@ -155,7 +156,6 @@ chatNamespace.on("connection", (socket) => {
       `Recieved guftgu from ${socket.username} to ${toUsername}: `,
       message,
     );
-    const myUsername = socket.username;
     sendNotification(message, 'Guftgu', toUsername, myUsername);
     if(users[toUsername]){
     chatNamespace

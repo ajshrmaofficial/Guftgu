@@ -3,7 +3,7 @@ const messageModel = require("../schema/messageSchema");
 const friendshipModel = require("../schema/friendShipSchema");
 const { tryCatch } = require("../utils/tryCatch");
 const AppError = require("../utils/appErrorClass");
-const { MISSING_FIELDS, INTERNAL_SERVER_ERROR, INVALID_CREDENTIALS } = require("../utils/errorCodes");
+const { MISSING_FIELDS, INTERNAL_SERVER_ERROR, INVALID_CREDENTIALS, USER_NOT_FOUND } = require("../utils/errorCodes");
 const jwt = require("jsonwebtoken");
 const userModel = require("../schema/userSchema");
 
