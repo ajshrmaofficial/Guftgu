@@ -71,10 +71,10 @@ const sendNotification = async (messageBody, screen, toUsername, myUsername) => 
     const users = await userModel.find();
     const messageData = {
       tokens: [],
-      notification: {
-        title: 'New message in Mehfil',
-        body: messageBody
-      },
+      // notification: {
+      //   title: 'New message in Mehfil',
+      //   body: messageBody
+      // },
       data: {
         screen: screen,
         message: messageBody
