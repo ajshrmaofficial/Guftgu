@@ -8,27 +8,30 @@ services:
     volumes:
       - mongo_db:/data/db
 
-  redis_db:
-    container_name: session_container
-    image: redis:latest
-    restart: always
-    ports:
-      - 6379:6379
-    volumes:
-      - redis_db:/data/db
+  # redis_db:
+  #   container_name: session_container
+  #   image: redis:latest
+  #   restart: always
+  #   ports:
+  #     - 6379:6379
+  #   volumes:
+  #     - redis_db:/data/db
 
   api:
     container_name: api_container
     build: .
     ports: 
-      - 3000:3000
+      - 8080:8080
     volumes:
       - .:/app
       - /app/node_modules
+    environment:
+      - MONGO_URI=mongodb://mongo_db:27017
+      # - REDIS_URI=redis://redis_db:6379
     depends_on:
       - mongo_db
-      - redis_db
+      # - redis_db
 
 volumes:
   mongo_db:
-  redis_db:
+  # redis_db:
