@@ -6,4 +6,4 @@ firebase.initializeApp({
     credential: firebase.credential.cert(serviceAccount)
 })
 
-module.exports = {firebase};
+module.exports = firebase;
