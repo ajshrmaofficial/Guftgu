@@ -1,5 +1,7 @@
 import axios, { AxiosInstance } from "axios";
-import {DEV_SERVER_IP, PROD_SERVER_IP, ENV} from "@env";
+import Config from 'react-native-config'
+
+const {ENV, PROD_SERVER_IP, DEV_SERVER_IP} = Config;
 
 const server: AxiosInstance = axios.create({
     baseURL: ENV==="prod" ? PROD_SERVER_IP: DEV_SERVER_IP,
