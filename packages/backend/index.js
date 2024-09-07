@@ -3,11 +3,11 @@ const express = require("express");
 const server = express();
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const { sessionMiddleware, redisClient } = require("./auth/sessionManager");
-const authRouter = require("./auth/authRouter");
-const messageModel = require("./schema/messageSchema");
-const userRouter = require("./auth/userRouter");
-const userModel = require("./schema/userSchema");
+// const { sessionMiddleware, redisClient } = require("./auth/sessionManager");
+const {authRouter} = require("./auth");
+const {messageModel} = require("./schema");
+const {userRouter} = require("./auth");
+const {userModel} = require("./schema");
 const { firebase } = require("./utils/firebase");
 
 var httpServer; // setup for https server in production
