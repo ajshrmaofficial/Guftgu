@@ -4,7 +4,7 @@ const server = express();
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 // const { sessionMiddleware, redisClient } = require("./auth/sessionManager");
-const {authRouter} = require("./handlers");
+const {authRouter, socketHandler} = require("./handlers");
 const {messageModel} = require("./schema");
 const {userRouter} = require("./handlers");
 const {userModel} = require("./schema");
@@ -66,130 +66,132 @@ io.engine.on("connection_error", (err) => {
   console.log("socket.io connection error: ", err);
 });
 
-const sendNotification = async (messageBody, screen, toUsername, myUsername) => {
-  if(screen === 'Mehfil'){
-    const users = await userModel.find();
-    const messageData = {
-      token: '',
-      // notification: {
-      //   title: 'New message in Mehfil',
-      //   body: messageBody
-      // },
-      data: {
-        screen: screen,
-        message: messageBody
-      }
-    }
-    users.forEach(user => {
-      if(user.fcmToken){
-        messageData.token = user.fcmToken;
-        firebase.messaging().send(messageData)
-          .then((response) => {
-            console.log('Successfully sent message:', response);
-          })
-          .catch((error) => {
-            console.log('Error sending message:', error);
-          });
-      }
-    });
-    // firebase.messaging().sendEachForMulticast(messageData);
-  } else if(screen === 'Guftgu'){
-    const findUser = await userModel.findOne({username: toUsername});
-    if(findUser && findUser.fcmToken){
-      console.log('sending fcm notification to ', toUsername);
-      const messageData = {
-        token: findUser.fcmToken,
-        // notification: {
-        //   title: 'New message from ' + myUsername,
-        //   body: messageBody
-        // },
-        data: {
-          screen: screen,
-          message: messageBody,
-          fromUsername: myUsername
-        },
-      }
-      firebase.messaging().send(messageData)
-        .then((response) => {
-          console.log('Successfully sent message:', response);
-        })
-        .catch((error) => {
-          console.log('Error sending message:', error);
-        });
-    }
-  }
-}
+socketHandler(io);
 
-const chatNamespace = io.of("/chat");
-const users = {};
-// TODO: add authentication/authorization to chat namespace (maybe use jwt token)
-chatNamespace.on("connection", (socket) => {
-  console.log(
-    "Socket.io sessionID: " + JSON.stringify(socket.request.sessionID),
-  );
-  console.log(
-    `A user connected to chat namespace: ${socket.id} ${socket.username}`,
-  );
-  const myUsername = socket.username;
-  socket.join(socket.username);
-  users[socket.username] = socket.username;
+// const sendNotification = async (messageBody, screen, toUsername, myUsername) => {
+//   if(screen === 'Mehfil'){
+//     const users = await userModel.find();
+//     const messageData = {
+//       token: '',
+//       // notification: {
+//       //   title: 'New message in Mehfil',
+//       //   body: messageBody
+//       // },
+//       data: {
+//         screen: screen,
+//         message: messageBody
+//       }
+//     }
+//     users.forEach(user => {
+//       if(user.fcmToken){
+//         messageData.token = user.fcmToken;
+//         firebase.messaging().send(messageData)
+//           .then((response) => {
+//             console.log('Successfully sent message:', response);
+//           })
+//           .catch((error) => {
+//             console.log('Error sending message:', error);
+//           });
+//       }
+//     });
+//     // firebase.messaging().sendEachForMulticast(messageData);
+//   } else if(screen === 'Guftgu'){
+//     const findUser = await userModel.findOne({username: toUsername});
+//     if(findUser && findUser.fcmToken){
+//       console.log('sending fcm notification to ', toUsername);
+//       const messageData = {
+//         token: findUser.fcmToken,
+//         // notification: {
+//         //   title: 'New message from ' + myUsername,
+//         //   body: messageBody
+//         // },
+//         data: {
+//           screen: screen,
+//           message: messageBody,
+//           fromUsername: myUsername
+//         },
+//       }
+//       firebase.messaging().send(messageData)
+//         .then((response) => {
+//           console.log('Successfully sent message:', response);
+//         })
+//         .catch((error) => {
+//           console.log('Error sending message:', error);
+//         });
+//     }
+//   }
+// }
 
-  socket.on("disconnect", () => {
-    console.log(`User ${socket.username} disconnected`);
-    delete users[socket.username];
-  });
+// const chatNamespace = io.of("/chat");
+// const users = {};
+// // TODO: add authentication/authorization to chat namespace (maybe use jwt token)
+// chatNamespace.on("connection", (socket) => {
+//   console.log(
+//     "Socket.io sessionID: " + JSON.stringify(socket.request.sessionID),
+//   );
+//   console.log(
+//     `A user connected to chat namespace: ${socket.id} ${socket.username}`,
+//   );
+//   const myUsername = socket.username;
+//   socket.join(socket.username);
+//   users[socket.username] = socket.username;
 
-  socket.on("isOnline", (username) =>{
-    console.log(`Checking if ${username} is online`);
-    if(users[username]){
-      socket.to(socket.username).emit("isOnline", {username, isOnline: true});
-    }
-    else{
-      socket.to(socket.username).emit("isOnline", {username, isOnline: false});
-    }
-  })
+//   socket.on("disconnect", () => {
+//     console.log(`User ${socket.username} disconnected`);
+//     delete users[socket.username];
+//   });
 
-  socket.on("mehfil", (message) => {
-    console.log(`Recieved message from ${socket.username}: `, message);
-    sendNotification(message, 'Mehfil', '', myUsername);
-    socket.broadcast.emit("mehfil", {
-      message,
-      fromID: socket.id,
-      fromUsername: socket.username,
-    });
-  });
-  socket.on("guftgu", async({ message, toUsername }) => {
-    console.log(
-      `Recieved guftgu from ${socket.username} to ${toUsername}: `,
-      message,
-    );
-    sendNotification(message, 'Guftgu', toUsername, myUsername);
-    if(users[toUsername]){
-    chatNamespace
-      .to(toUsername)
-      .emit("guftgu", { message, fromUsername: socket.username });
-    } else {
-      const msg = new messageModel({sender: socket.username, receiver: toUsername, message});
-      await msg.save();
-    }
-  });
-  socket.on("location", (location) => {
-    console.log(`Location recieved from ${socket.username}: `, location);
-    socket.broadcast.emit("location", {
-      location,
-      fromUsername: socket.username,
-    });
-  });
-});
+//   socket.on("isOnline", (username) =>{
+//     console.log(`Checking if ${username} is online`);
+//     if(users[username]){
+//       socket.to(socket.username).emit("isOnline", {username, isOnline: true});
+//     }
+//     else{
+//       socket.to(socket.username).emit("isOnline", {username, isOnline: false});
+//     }
+//   })
 
-chatNamespace.use((socket, next) => {
-  const username = socket.handshake.auth.username;
-  if (!username) {
-    return next(new Error("invalid username"));
-  }
-  socket.username = username;
-  next();
-});
+//   socket.on("mehfil", (message) => {
+//     console.log(`Recieved message from ${socket.username}: `, message);
+//     sendNotification(message, 'Mehfil', '', myUsername);
+//     socket.broadcast.emit("mehfil", {
+//       message,
+//       fromID: socket.id,
+//       fromUsername: socket.username,
+//     });
+//   });
+//   socket.on("guftgu", async({ message, toUsername }) => {
+//     console.log(
+//       `Recieved guftgu from ${socket.username} to ${toUsername}: `,
+//       message,
+//     );
+//     sendNotification(message, 'Guftgu', toUsername, myUsername);
+//     if(users[toUsername]){
+//     chatNamespace
+//       .to(toUsername)
+//       .emit("guftgu", { message, fromUsername: socket.username });
+//     } else {
+//       const msg = new messageModel({sender: socket.username, receiver: toUsername, message});
+//       await msg.save();
+//     }
+//   });
+//   socket.on("location", (location) => {
+//     console.log(`Location recieved from ${socket.username}: `, location);
+//     socket.broadcast.emit("location", {
+//       location,
+//       fromUsername: socket.username,
+//     });
+//   });
+// });
+
+// chatNamespace.use((socket, next) => {
+//   const username = socket.handshake.auth.username;
+//   if (!username) {
+//     return next(new Error("invalid username"));
+//   }
+//   socket.username = username;
+//   next();
+// });
 
 httpServer.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
