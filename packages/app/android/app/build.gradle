@@ -3,6 +3,8 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 import groovy.json.JsonSlurper
 
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+
 // Read package.json and return `version` field
 def getVersionFromNpm() {
     //  Read and parse package.json file from project root
