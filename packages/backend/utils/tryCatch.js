@@ -1,4 +1,4 @@
-exports.tryCatch = (controller) => async (req, res, next) => {
+const tryCatch = (controller) => async (req, res, next) => {
     try {
         await controller(req, res);
     }
@@ -6,3 +6,5 @@ exports.tryCatch = (controller) => async (req, res, next) => {
         return next(err);
     }
 };
+
+module.exports = tryCatch;
