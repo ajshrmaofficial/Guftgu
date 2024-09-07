@@ -4,9 +4,9 @@ const server = express();
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 // const { sessionMiddleware, redisClient } = require("./auth/sessionManager");
-const {authRouter} = require("./auth");
+const {authRouter} = require("./handlers");
 const {messageModel} = require("./schema");
-const {userRouter} = require("./auth");
+const {userRouter} = require("./handlers");
 const {userModel} = require("./schema");
 const { firebase } = require("./utils/firebase");
 
