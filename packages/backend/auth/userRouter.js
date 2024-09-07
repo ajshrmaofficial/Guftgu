@@ -1,11 +1,11 @@
 const express = require("express");
-const messageModel = require("../schema/messageSchema");
-const friendshipModel = require("../schema/friendShipSchema");
-const { tryCatch } = require("../utils/tryCatch");
-const AppError = require("../utils/appErrorClass");
+const {messageModel} = require("../schema");
+const {friendshipModel} = require("../schema");
+const { tryCatch } = require("../utils");
+const {AppError} = require("../utils");
 const { MISSING_FIELDS, INTERNAL_SERVER_ERROR, INVALID_CREDENTIALS, USER_NOT_FOUND } = require("../utils/errorCodes");
 const jwt = require("jsonwebtoken");
-const userModel = require("../schema/userSchema");
+const {userModel} = require("../schema");
 
 const userRouter = express.Router();
 
@@ -105,5 +105,7 @@ userRouter.post("/acceptFriendRequest", tryCatch(async (req, res) => {
     await friendship.save();
     res.status(200).send("Friend request accepted successfully");
 }));
+
+
 
 module.exports = userRouter;
