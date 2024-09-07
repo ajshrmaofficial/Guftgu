@@ -2,14 +2,14 @@ const express = require("express");
 const { randomBytes } = require("node:crypto");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
-const userModel = require("../schema/userSchema");
+const {userModel} = require("../schema");
 const authRouter = express.Router();
-const sessionManager = require("./sessionManager");
-const errorHandler = require("../utils/errorHandler");
-const { tryCatch } = require("../utils/tryCatch");
+// const sessionManager = require("./sessionManager");
+const {errorHandlerMiddleware} = require("../utils");
+const { tryCatch } = require("../utils");
 const { USER_NOT_FOUND, MISSING_FIELDS, INVALID_CREDENTIALS, USERNAME_TAKEN } = require("../utils/errorCodes");
-const AppError = require("../utils/appErrorClass");
-const redisClient = sessionManager.redisClient;
+const {AppError} = require("../utils");
+// const redisClient = sessionManager.redisClient;
 const jwt = require("jsonwebtoken");
 
 async function connectMongoose() {
@@ -23,16 +23,16 @@ async function connectMongoose() {
 
 connectMongoose();
 
-authRouter.get("/isLoggedIn", async (req, res) => {
-  if (req.cookies?.sessionID) {
-    const result = await redisClient.exists(`sess:${req.cookies.sessionID}`);
-    if (result) res.send({ isLoggedIn: true });
-    else res.send({ isLoggedIn: false });
-  } else {
-    console.log("sessionID not present !!!");
-    res.send({ isLoggedIn: false });
-  }
-});
+// authRouter.get("/isLoggedIn", async (req, res) => {
+//   if (req.cookies?.sessionID) {
+//     const result = await redisClient.exists(`sess:${req.cookies.sessionID}`);
+//     if (result) res.send({ isLoggedIn: true });
+//     else res.send({ isLoggedIn: false });
+//   } else {
+//     console.log("sessionID not present !!!");
+//     res.send({ isLoggedIn: false });
+//   }
+// });
 
 authRouter.post("/register", tryCatch(async (req, res) => {
   const { username, passwd, name } = req.body;
@@ -99,6 +99,6 @@ authRouter.get("/logout", async (req, res) => {
     .end();
 });
 
-authRouter.use(errorHandler)
+authRouter.use(errorHandlerMiddleware)
 
 module.exports = authRouter;
