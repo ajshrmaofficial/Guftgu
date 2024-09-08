@@ -12,17 +12,19 @@
     ]
   },
   "scripts": {
-    "webDev": "lerna run webDev",
-    "webBuild": "lerna run webBuild",
-    "backendDev": "lerna run backendDev",
-    "rnStart": "lerna run rnStart",
+    "dev:web": "lerna run dev:web",
+    "build:web": "lerna run build:web",
+    "preview:web": "lerna run preview:web",
+    "dev:backend": "lerna run dev:backend",
+    "start:backend": "lerna run start:backend",
+    "start:rn": "lerna run start:rn",
     "android": "lerna run android",
     "ios": "lerna run ios",
-    "rnLint": "lerna run rnLint",
-    "rnTest": "lerna run rnTest",
+    "lint:rn": "lerna run lint:rn",
+    "test:rn": "lerna run test:rn",
     "postversion": "cd packages/app/android && ./gradlew bundleRelease",
     "reset": "find . -type dir -name node_modules | xargs rm -rf && rm -rf yarn.lock",
-    "clean": "lerna run clean"
+    "clean:rn": "lerna run clean:rn"
   },
   "keywords": [],
   "author": "Ajay Sharma",
