@@ -65,6 +65,8 @@ function ChatScreen({
     chatSocket.emit('guftgu', {
       message: currMessage,
       toUsername: friendUsername,
+    }, (response: {status: 'delivered' | 'sent'})=>{
+      console.log(response.status);
     });
     await saveChat(myUsername, friendUsername, currMessage);
     setMessages(prev => [
