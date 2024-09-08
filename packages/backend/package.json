@@ -5,8 +5,8 @@
   "main": "index.js",
   "private": "true",
   "scripts": {
-    "backendDev": "nodemon index.js",
-    "backendStart": "node index.js"
+    "dev:backend": "nodemon index.js",
+    "start:backend": "node index.js"
   },
   "author": "Ajay Sharma",
   "license": "ISC",
