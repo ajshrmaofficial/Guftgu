@@ -1,3 +1,4 @@
+const { userModel } = require('../schema');
 const { firebase } = require('../utils');
 const socketAuth = require('./socketAuth');
 
@@ -12,7 +13,6 @@ module.exports = (io) => {
         //   const users = await userModel.find();
         const users = await userModel.find({fcmToken: {$exists: true}});
         const tokens = users.map(user=>user.fcmToken);
-
           const message = {
             // notification: {
             //   title: 'New message in Mehfil',
@@ -71,7 +71,7 @@ module.exports = (io) => {
       }
       
       const users = {};
-      // TODO: add authentication/authorization to chat namespace (maybe use jwt token)
+
       chatNamespace.on("connection", (socket) => {
         console.log(
           "Socket.io sessionID: " + JSON.stringify(socket.request.sessionID),
@@ -79,6 +79,11 @@ module.exports = (io) => {
         console.log(
           `A user connected to chat namespace: ${socket.id} ${socket.username}`,
         );
+
+        socket.use((packet, next)=>{
+            socketAuth(socket,next);
+        })
+
         const myUsername = socket.username;
         socket.join(socket.username);
         users[socket.username] = socket.username;
@@ -100,23 +105,26 @@ module.exports = (io) => {
       
         socket.on("mehfil", (message) => {
           console.log(`Recieved message from ${socket.username}: `, message);
-          sendNotification(message, 'Mehfil', '', myUsername);
+        //   sendNotification(message, 'Mehfil', '', myUsername); //TODO: Have to fix notifications at frontend...
           socket.broadcast.emit("mehfil", {
             message,
             fromID: socket.id,
             fromUsername: socket.username,
           });
         });
-        socket.on("guftgu", async({ message, toUsername }) => {
+        socket.on("guftgu", async({ message, toUsername }, callback) => {
           console.log(
             `Recieved guftgu from ${socket.username} to ${toUsername}: `,
             message,
           );
-          sendNotification(message, 'Guftgu', toUsername, myUsername);
+        //   sendNotification(message, 'Guftgu', toUsername, myUsername); //TODO: Have to fix notifications at frontend...
           if(users[toUsername]){
           chatNamespace
             .to(toUsername)
             .emit("guftgu", { message, fromUsername: socket.username });
+            callback({
+                status: "received"
+            })
           } else {
             const msg = new messageModel({sender: socket.username, receiver: toUsername, message});
             await msg.save();
