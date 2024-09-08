@@ -7,10 +7,10 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
-    "rnLint": "eslint .",
-    "rnStart": "react-native start",
-    "rnTest": "jest",
-    "clean": "react-native start --reset-cache"
+    "lint:rn": "eslint .",
+    "start:rn": "react-native start",
+    "test:rn": "jest",
+    "clean:rn": "react-native start --reset-cache"
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^4.6.1",
