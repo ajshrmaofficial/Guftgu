@@ -11,7 +11,7 @@ const {userModel} = require("./schema");
 const { firebase } = require("./utils/firebase");
 
 var httpServer; // setup for https server in production
-if (process.env.USING_HEROKU === "false") {
+if (process.env.USING_HTTPS === "true") {
   // if not using heroku, use https (because heroku provides ssl certificate for free, so no need to use https in heroku deployment)
   const fs = require("fs");
   const https = require("https");
