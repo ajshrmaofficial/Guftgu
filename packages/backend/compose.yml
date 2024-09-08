@@ -7,6 +7,8 @@ services:
       - 27017:27017
     volumes:
       - mongo_db:/data/db
+    environment:
+      - NODE_ENV=developement
 
   # redis_db:
   #   container_name: session_container
