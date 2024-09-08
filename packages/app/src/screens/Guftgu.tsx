@@ -4,7 +4,6 @@ import useAuth from '../utility/hooks/useAuth';
 import {
   chatSocket,
   connectChatSocket,
-  setSocketUsername,
 } from '../utility/socket/socketConfig';
 import {Event, useSocketEvents} from '../utility/socket/useSocketEvents';
 import {useUser} from '../utility/context/UserContext';
@@ -63,8 +62,7 @@ function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
     if (!authToken || !username) {
       return;
     }
-    setSocketUsername(username);
-    connectChatSocket();
+    connectChatSocket(authToken);
   }, []);
 
   function EmptyChatComponent(): React.JSX.Element {
