@@ -1,71 +1,73 @@
-const { userModel } = require("../schema");
-const { firebase } = require("../utils");
+// const { userModel } = require("../schema");
+const { messageModel } = require("../schema")
+// const { firebase } = require("../utils");
 const socketAuth = require("./socketAuth");
 
 const onlineUsers = new Map();
 
-const sendNotification = async (
-  messageBody,
-  screen,
-  toUsername,
-  myUsername
-) => {
-  if (screen === "Mehfil") {
-    //   const users = await userModel.find();
-    const users = await userModel.find({ fcmToken: { $exists: true } });
-    const tokens = users.map((user) => user.fcmToken);
-    const message = {
-      // notification: {
-      //   title: 'New message in Mehfil',
-      //   body: messageBody
-      // },
-      data: {
-        screen: screen,
-        message: messageBody,
-      },
-    };
-    const messages = tokens.map((token) => ({
-      ...message,
-      token: token,
-    }));
-    const response = await firebase
-      .messaging()
-      .sendEachForMulticast({ messages });
-    console.log(`${response.successCount} messages were sent successfully`);
-    console.log(`${response.failureCount} messages failed to send`);
-  } else if (screen === "Guftgu") {
-    const findUser = await userModel.findOne({ username: toUsername });
-    if (findUser && findUser.fcmToken) {
-      console.log("sending fcm notification to ", toUsername);
-      const messageData = {
-        token: findUser.fcmToken,
-        data: {
-          screen: screen,
-          message: messageBody,
-          fromUsername: myUsername,
-        },
-      };
-      firebase
-        .messaging()
-        .send(messageData)
-        .then((response) => {
-          console.log("Successfully sent message:", response);
-        })
-        .catch((error) => {
-          console.log("Error sending message:", error);
-        });
-    }
-  }
-};
+// const sendNotification = async (
+//   messageBody,
+//   screen,
+//   toUsername,
+//   myUsername
+// ) => {
+//   if (screen === "Mehfil") {
+//     //   const users = await userModel.find();
+//     const users = await userModel.find({ fcmToken: { $exists: true } });
+//     const tokens = users.map((user) => user.fcmToken);
+//     const message = {
+//       // notification: {
+//       //   title: 'New message in Mehfil',
+//       //   body: messageBody
+//       // },
+//       data: {
+//         screen: screen,
+//         message: messageBody,
+//       },
+//     };
+//     const messages = tokens.map((token) => ({
+//       ...message,
+//       token: token,
+//     }));
+//     const response = await firebase
+//       .messaging()
+//       .sendEachForMulticast({ messages });
+//     console.log(`${response.successCount} messages were sent successfully`);
+//     console.log(`${response.failureCount} messages failed to send`);
+//   } else if (screen === "Guftgu") {
+//     const findUser = await userModel.findOne({ username: toUsername });
+//     if (findUser && findUser.fcmToken) {
+//       console.log("sending fcm notification to ", toUsername);
+//       const messageData = {
+//         token: findUser.fcmToken,
+//         data: {
+//           screen: screen,
+//           message: messageBody,
+//           fromUsername: myUsername,
+//         },
+//       };
+//       firebase
+//         .messaging()
+//         .send(messageData)
+//         .then((response) => {
+//           console.log("Successfully sent message:", response);
+//         })
+//         .catch((error) => {
+//           console.log("Error sending message:", error);
+//         });
+//     }
+//   }
+// };
 
 function reegisterEventHandlers(socket) {
   const socketDisconnected = () => {
+    console.log(`${socket.username} disconnected!!`);
     onlineUsers.delete(socket.username);
   };
 
   const socketIsOnline = (username) => {
     console.log(`Checking if ${username} is online`);
-    if (users[username]) {
+    if (onlineUsers.has(username)) {
       socket.to(socket.username).emit("isOnline", { username, isOnline: true });
     } else {
       socket
@@ -92,7 +94,7 @@ function reegisterEventHandlers(socket) {
       message
     );
     //   sendNotification(message, 'Guftgu', toUsername, myUsername); //TODO: Have to fix notifications at frontend...
-    if (users[toUsername]) {
+    if (onlineUsers.has(toUsername)) {
       chatNamespace
         .to(toUsername)
         .emit("guftgu", { message, fromUsername: socket.username });
@@ -161,6 +163,6 @@ module.exports = (io) => {
 
     socket.on("location", receivedSocketLocation);
 
-    socket.on("friendRequest:sent")
+    // socket.on("friendRequest:sent")
   });
 };
