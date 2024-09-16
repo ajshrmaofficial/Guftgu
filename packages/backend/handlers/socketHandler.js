@@ -59,7 +59,7 @@ const onlineUsers = new Map();
 //   }
 // };
 
-function reegisterEventHandlers(socket, chatNamespace) {
+function registerEventHandlers(socket, chatNamespace) {
   const socketDisconnected = () => {
     console.log(`${socket.username} disconnected!!`);
     onlineUsers.delete(socket.username);
@@ -140,7 +140,7 @@ module.exports = (io) => {
       mehfilMessageReceived,
       guftguMessageReceived,
       receivedSocketLocation,
-    } = reegisterEventHandlers(socket, chatNamespace);
+    } = registerEventHandlers(socket, chatNamespace);
 
     console.log(
       `A user connected to chat namespace: ${socket.id} ${socket.username}`
