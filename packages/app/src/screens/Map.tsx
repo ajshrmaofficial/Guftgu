@@ -1,7 +1,7 @@
 import React from 'react';
 import {Dimensions, PermissionsAndroid, Platform, StatusBar, StyleSheet, Text, View} from 'react-native';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
-import {useUser} from '../utility/context/UserContext';
+// import {useUser} from '../utility/context/UserContext';
 import useLocation from '../utility/hooks/useLocation';
 import {TouchableOpacity} from 'react-native';
 import { mapStyle } from '../utility/definitionStore';
