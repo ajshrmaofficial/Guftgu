@@ -2,7 +2,7 @@
 const jwt = require("jsonwebtoken");
 
 module.exports = (socket, next) => {
-  const token = socket.handshake.auth.token;
+  const token = socket.handshake.auth?.token || socket.handshake.headers?.token;
   if (!token) {
     return next(new Error("Authentication error: Token is missing"));
   }
