@@ -1,12 +1,11 @@
-import React, {useEffect, useRef, useState} from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import { Text, TouchableOpacity, View} from 'react-native';
 import useAuth from '../utility/hooks/useAuth';
 import {
-  chatSocket,
   connectChatSocket,
 } from '../utility/socket/socketConfig';
-import {Event, useSocketEvents} from '../utility/socket/useSocketEvents';
-import {useUser} from '../utility/context/UserContext';
+import {ReceiveEvent, useSocketReceiveEvents} from '../utility/socket/useSocketEvents';
+// import {useUser} from '../utility/context/UserContext';
 import { AppNavigationProps } from '../utility/navigation/NavigationStackTypes';
 import { FlashList } from '@shopify/flash-list';
 import { useTheme } from '@react-navigation/native';
@@ -31,7 +30,7 @@ function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
   
   // const Friends: Friend[] = [{friendName: "Abhishek Kumar", friendUsername: "abhi"}];
   const Friends: Friend[] = [];
-  const events: Event[] = [
+  const events: ReceiveEvent[] = [
     {
       name: 'connect_error',
       handler(err: any) {
@@ -52,7 +51,7 @@ function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
       },
     },
   ];
-  useSocketEvents(events);
+  useSocketReceiveEvents(events);
 
   const openChat = (friendUsername: string) => {
     navigation.navigate("ChatScreen", {username: friendUsername});
