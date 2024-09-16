@@ -1,5 +1,5 @@
 import {BottomTabHeaderProps} from '@react-navigation/bottom-tabs';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {Alert, Platform, StyleSheet, Text, ToastAndroid, TouchableOpacity, View} from 'react-native';
 import {useTheme} from '@react-navigation/native';
 import UserProfileIcon from '../../assets/svg/person.svg';
@@ -8,6 +8,7 @@ import MenuIcon from '../../assets/svg/ellipsis-horizontal.svg';
 import AddPersonIcon from '../../assets/svg/person-add.svg';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import useMenu from './MenuModal';
+import NetInfo from '@react-native-community/netinfo';
 
 function Header({props, bottomModalRef}: {props: BottomTabHeaderProps, bottomModalRef: bottomModalCollection}): React.JSX.Element {
   const {colors} = useTheme();
@@ -17,6 +18,15 @@ function Header({props, bottomModalRef}: {props: BottomTabHeaderProps, bottomMod
   const {menuModalRef, addFriendModalRef, searchModalRef} = bottomModalRef;
   const {openMenuModal, closeMenuModal} = useMenu(menuModalRef);
   const {openAddFriendModal, closeAddFriendModal} = useAddFriend(addFriendModalRef);
+  const [isConnected, setIsConnected] = useState<boolean | null>(true);
+  
+  useEffect(()=>{
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected);
+    });
+
+    return () =>  unsubscribe();
+  }, [])
 
   const styles = StyleSheet.create({
     headerSVG: {
