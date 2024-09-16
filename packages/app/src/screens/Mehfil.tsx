@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {Text, TextInput, TouchableOpacity, View} from 'react-native';
 import useAuth from '../utility/hooks/useAuth';
 import {chatSocket} from '../utility/socket/socketConfig';
-import {Event, useSocketEvents} from '../utility/socket/useSocketEvents';
+import {ReceiveEvent, SendEvent, useSocketReceiveEvents, useSocketSendEvents} from '../utility/socket/useSocketEvents';
 import {useTheme} from '@react-navigation/native';
 import {FlashList} from '@shopify/flash-list';
 import {Message} from '../utility/definitionStore';
@@ -15,20 +15,20 @@ function Mehfil(): React.JSX.Element {
   const [error, setError] = useState<string | null>('');
   const {colors} = useTheme();
 
-  const events: Event[] = [
+  const events: ReceiveEvent[] = [
     {
       name: 'connect_error',
       handler(err: any) {
         setError('Connection Error...');
       },
     },
-    {
-      name: 'connect',
-      handler() {
-        setError(null);
-        console.log('Connected to chat server...🥳');
-      },
-    },
+    // {
+    //   name: 'connect',
+    //   handler() {
+    //     setError(null);
+    //     console.log('Connected to chat server...🥳');
+    //   },
+    // },
     {
       name: 'mehfil',
       handler({
@@ -46,13 +46,22 @@ function Mehfil(): React.JSX.Element {
       },
     },
   ];
-  useSocketEvents(events);
+  useSocketReceiveEvents(events);
+
+  const SenderEvents: SendEvent[] = [
+    {
+      name: 'mehfil',
+    }
+  ]
+
+  const {mehfil} = useSocketSendEvents(SenderEvents);
 
   const sendMessage = (): void => {
     if (!currMessage || !username) {
       return;
     }
-    chatSocket.emit('mehfil', currMessage);
+    // chatSocket.emit('mehfil', currMessage);
+    mehfil(currMessage);
     setMessages(prev => [
       {
         message: currMessage,
