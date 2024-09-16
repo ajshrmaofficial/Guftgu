@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {Event, useSocketEvents} from '../utility/socket/useSocketEvents';
+import {ReceiveEvent, SendEvent, useSocketReceiveEvents, useSocketSendEvents} from '../utility/socket/useSocketEvents';
 import {getChats, saveChat} from '../utility/dbModel/db';
 import {Message as MessageModel} from '../utility/dbModel/dbModel';
 import {AppNavigationProps} from '../utility/navigation/NavigationStackTypes';
@@ -26,6 +26,15 @@ function ChatScreen({
   const [currMessage, setCurrMessage] = useState<string>('');
   const [error, setError] = useState<string | null>('');
   const {colors} = useTheme();
+
+  const SenderEvents: SendEvent[] = [
+    {
+      name: 'guftgu',
+      prepare: (message: string) => ({message, toUsername: friendUsername})
+    }
+  ];
+
+  const {guftgu} = useSocketSendEvents(SenderEvents)
 
   useEffect(() => {
     if (!friendUsername) {
@@ -62,12 +71,13 @@ function ChatScreen({
     if (!currMessage || !username) {
       return;
     }
-    chatSocket.emit('guftgu', {
-      message: currMessage,
-      toUsername: friendUsername,
-    }, (response: {status: 'delivered' | 'sent'})=>{
-      console.log(response.status);
-    });
+    // chatSocket.emit('guftgu', {
+    //   message: currMessage,
+    //   toUsername: friendUsername,
+    // }, (response: {status: 'delivered' | 'sent'})=>{
+    //   console.log(response.status);
+    // });
+    guftgu(currMessage);
     await saveChat(myUsername, friendUsername, currMessage);
     setMessages(prev => [
         {
@@ -80,7 +90,7 @@ function ChatScreen({
     setCurrMessage('');
   };
 
-  const events: Event[] = [
+  const ReceiverEvents: ReceiveEvent[] = [
     {
       name: 'guftgu',
       handler({
@@ -99,7 +109,7 @@ function ChatScreen({
       },
     },
   ];
-  useSocketEvents(events);
+  useSocketReceiveEvents(ReceiverEvents);
 
   return (
     <View className="h-full w-full">
