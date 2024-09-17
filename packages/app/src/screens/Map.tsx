@@ -1,48 +1,21 @@
 import React from 'react';
-import {Dimensions, PermissionsAndroid, Platform, StatusBar, StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
-// import {useUser} from '../utility/context/UserContext';
 import useLocation from '../utility/hooks/useLocation';
 import {TouchableOpacity} from 'react-native';
 import { mapStyle } from '../utility/definitionStore';
-import { useAppGetState, useAppSetState } from '../utility/redux/useAppState';
-import { setLocationPermission } from '../utility/redux/userSlice';
+import useMiscStore from '../utility/store/miscStore';
+import useUserStore from '../utility/store/userStore';
+import useAppStore from '../utility/store/appStore';
+
+// TODO: have to fix some things here, like grant location permission button function, etc...
 
 function Map(): React.JSX.Element {
-
-  const height = Dimensions.get('window').height;
-
-  // const {
-  //   friendLocations,
-  //   myLocation,
-  //   isLocationPermission,
-  //   setLocationPermission,
-  // } = useUser();
-  const friendLocations = useAppGetState(state => state.user.friendLocations);
-  const myLocation = useAppGetState(state => state.user.myLocation);
-  const isLocationPermission = useAppGetState(state => state.user.locationPermission);
-  const setState = useAppSetState()
+  // const height = Dimensions.get('window').height;
+  const friendLocations = useMiscStore(state => state.friendsLocations);
+  const myLocation = useUserStore(state => state.myLocation);
+  const isLocationPermission = useAppStore(state => state.locationPermission);
   const {errorMsg, isLoading} = useLocation();
-
-  const grantLocationPermission = async () => {
-    if(Platform.OS === 'android') {
-      try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        setState(setLocationPermission(true));
-      } else {
-        return;
-      }
-    } catch (error) {
-      console.log('Error', error);
-      setState(setLocationPermission(false));
-    }} 
-    else {
-      setState(setLocationPermission(true));
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -51,11 +24,11 @@ function Map(): React.JSX.Element {
       ) : !isLocationPermission ? (
         <>
           <Text>Locatin Permisssion not granted !!</Text>
-          <TouchableOpacity onPress={grantLocationPermission}>
+          <TouchableOpacity onPress={()=>{}}> 
             <Text>Grant Location Permission</Text>
           </TouchableOpacity>
         </>
-      ) : (
+      ) : ( myLocation &&
         <>
           <MapView
             style={styles.map}
