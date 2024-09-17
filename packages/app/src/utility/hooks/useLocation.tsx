@@ -1,104 +1,94 @@
 import Geolocation from '@react-native-community/geolocation';
-import {useUser} from '../context/UserContext';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {PermissionsAndroid, Platform} from 'react-native';
 import {chatSocket} from '../socket/socketConfig';
-import {useAuth} from '../context/AuthContext';
-import { useAppGetState, useAppSetState } from '../redux/useAppState';
-import { addMyLocation, setLocationPermission } from '../redux/userSlice';
+import useUserStore from '../store/userStore';
+import useAppStore from '../store/appStore';
+import { LATITUDE_DELTA, Location, LONGITUDE_DELTA } from '../definitionStore';
 
-interface LocationData {
-  isLocationPermission: boolean;
-  errorMsg: string | null;
-  isLoading: boolean;
-}
+// interface LocationData {
+//   isLocationPermission: boolean;
+//   errorMsg: string | null;
+//   isLoading: boolean;
+// }
 
-export default function useLocation(): LocationData {
+// TODO: majority has been refactored, some things have to be taken into consideration e.g error state and loading state...
+
+export default function useLocation(){
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // const {
-  //   myLocation,
-  //   addMyLocation,
-  //   isLocationPermission,
-  //   setLocationPermission,
-  // } = useUser();
-  const myLocation = useAppGetState(state => state.user.myLocation)
-  const locationPermission = useAppGetState(state => state.user.locationPermission)
-  const setState = useAppSetState();
+  const locationPermission = useAppStore(state => state.locationPermission);
+  const setMyLocation = useUserStore(state => state.setMyLocation);
+  const setLocationPermission = useAppStore(state => state.setLocationPermission);
 
-  const checkLocationPermission = async () => {
-    let alreadyHavePermission;
+  const checkLocationPermission = useCallback(async () => {
+    if(locationPermission) return true;
+
+    let granted: boolean = false;
     if (Platform.OS === 'android') {
-      alreadyHavePermission = await PermissionsAndroid.check(
+      granted = await PermissionsAndroid.check(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       );
-    }
-    if (Platform.OS === 'ios') {
-      alreadyHavePermission = true;
-    }
-    if (alreadyHavePermission) {
-      setState(setLocationPermission(true));
-      return true;
-    } else {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        );
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          setState(setLocationPermission(true));
-          return true;
-        } else {
-          setErrorMsg('Location permission denied');
-          return false;
-        }
-      } catch (error) {
-        setErrorMsg('Error in getting location permission');
-        console.log('Error', error);
-        setState(setLocationPermission(false));
-        return false;
+      if(!granted) {
+        const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+        granted = result === PermissionsAndroid.RESULTS.GRANTED;
       }
+    } else if (Platform.OS === 'ios') {
+      granted = true;
     }
-  };
+
+    setLocationPermission(granted);
+    return granted;
+  }, [locationPermission, setLocationPermission]);
+
+    const getCurrentPosition = useCallback(() => {
+      return new Promise<Location>((resolve, reject) => {
+        Geolocation.getCurrentPosition(
+          (position: any) => resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          }),
+          (error: any) => reject(error),
+          {enableHighAccuracy: true, maximumAge: 1000, timeout: 15000}
+        );
+      });
+    }, []);
 
   useEffect(() => {
-    checkLocationPermission()
-      .then(locationPermission => {
-        if (!locationPermission) {
-          return;
-        }
-        Geolocation.getCurrentPosition(
-          (data: {coords: {latitude: any; longitude: any}}) => {
-            setState(addMyLocation(
-              {
-                ...myLocation,
-                latitude: data.coords.latitude,
-                longitude: data.coords.longitude,
-              }
-            ))
-            chatSocket.emit('location', {
-              latitude: data.coords.latitude,
-              longitude: data.coords.longitude,
-            });
-            setIsLoading(false);
-          },
-          (error: any) => {
-            setErrorMsg('Error in getting current location');
-            console.log(error);
-          },
-          {enableHighAccuracy: true, maximumAge: 1000},
-        );
-      })
-      .catch(error => {
-        setErrorMsg('Error in getting location permission');
-        console.log(error);
-      });
-    setIsLoading(false);
-  }, []);
+    let isMounted: boolean = true;
+    const abortController = new AbortController();
 
-  return {
-    isLocationPermission: locationPermission,
-    errorMsg,
-    isLoading,
-  };
+    const fetchLocation = async () => {
+      try {
+        const hasPermission = await checkLocationPermission();
+        if(!hasPermission) {
+          throw new Error('Location permission not granted');
+        }
+
+        const location = await getCurrentPosition();
+        if(isMounted) {
+          setMyLocation({
+            latitude: location.latitude,
+            longitude: location.longitude,
+            latitudeDelta: LATITUDE_DELTA,
+            longitudeDelta: LONGITUDE_DELTA
+          });
+          chatSocket.emit('location', location);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        if(isMounted){
+          setErrorMsg(error instanceof Error ? error.message : 'An unknown error occured');
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchLocation();
+
+    return () => {
+      isMounted = false;
+      abortController.abort();
+    };
+  }, [checkLocationPermission, getCurrentPosition, setMyLocation]);
 }
