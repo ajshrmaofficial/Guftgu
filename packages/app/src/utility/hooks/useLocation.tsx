@@ -91,4 +91,6 @@ export default function useLocation(){
       abortController.abort();
     };
   }, [checkLocationPermission, getCurrentPosition, setMyLocation]);
+
+  return {errorMsg, isLoading};
 }
