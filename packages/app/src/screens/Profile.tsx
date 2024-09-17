@@ -1,11 +1,11 @@
 import React from "react";
 import { Text, View } from "react-native";
-import useAuth from "../utility/hooks/useAuth";
 import { useTheme } from "@react-navigation/native";
+import useUserStore from "../utility/store/userStore";
 
 function Profile(): React.JSX.Element {
     const {colors} = useTheme();
-    const {name} = useAuth();
+    const name = useUserStore(state => state.name);
     const myName = name || "User";
 
     return(
