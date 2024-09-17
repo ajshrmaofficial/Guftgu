@@ -5,12 +5,21 @@ import {AuthStackProps} from '../utility/navigation/NavigationStackTypes';
 import Loader from '../components/Loader';
 import { useTheme } from '@react-navigation/native';
 
+interface LoginFormData{
+  username: string
+  password: string
+  error: string
+}
+
 function Login({navigation}: AuthStackProps<"Login">): React.JSX.Element {
   const {login} = useAuthFunctions();
-  const [username, setUsername] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+  const [loginFormData, setLoginFormData] = useState<LoginFormData>({
+    username: '',
+    password: '',
+    error: ''
+  });
+  const {username, password, error} = loginFormData;
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
   const {colors} = useTheme();
 
   const submitCredentials = async () => {
@@ -18,7 +27,7 @@ function Login({navigation}: AuthStackProps<"Login">): React.JSX.Element {
     setLoading(true);
     const res = await login(username, password);
     if (res) {
-      setError('Incorrect Credentials !!');
+      setLoginFormData({...loginFormData, error: 'Incorrect Credentials !!'});
     }
     setLoading(false);
   };
@@ -42,7 +51,7 @@ function Login({navigation}: AuthStackProps<"Login">): React.JSX.Element {
               placeholder="Username"
               placeholderTextColor={colors.text}
               value={username}
-              onChangeText={text => setUsername(text)}
+              onChangeText={text => setLoginFormData({...loginFormData, username: text})}
             />
             <TextInput
               className="border rounded-md w-full mb-5"
@@ -50,7 +59,7 @@ function Login({navigation}: AuthStackProps<"Login">): React.JSX.Element {
               placeholder="Password"
               placeholderTextColor={colors.text}
               value={password}
-              onChangeText={text => setPassword(text)}
+              onChangeText={text => setLoginFormData({...loginFormData, password: text})}
               secureTextEntry={true}
             />
             <TouchableOpacity
