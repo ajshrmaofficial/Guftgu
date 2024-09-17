@@ -1,14 +1,13 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Text, TextInput, TouchableOpacity, View} from 'react-native';
-import useAuth from '../utility/hooks/useAuth';
-import {chatSocket} from '../utility/socket/socketConfig';
 import {ReceiveEvent, SendEvent, useSocketReceiveEvents, useSocketSendEvents} from '../utility/socket/useSocketEvents';
 import {useTheme} from '@react-navigation/native';
 import {FlashList} from '@shopify/flash-list';
 import {Message} from '../utility/definitionStore';
+import useUserStore from '../utility/store/userStore';
 
 function Mehfil(): React.JSX.Element {
-  const {username} = useAuth();
+  const username = useUserStore(state => state.username);
   const myUsername = 'me';
   const [messages, setMessages] = useState<Message[]>([] as Message[]);
   const [currMessage, setCurrMessage] = useState<string>('');
@@ -22,13 +21,6 @@ function Mehfil(): React.JSX.Element {
         setError('Connection Error...');
       },
     },
-    // {
-    //   name: 'connect',
-    //   handler() {
-    //     setError(null);
-    //     console.log('Connected to chat server...🥳');
-    //   },
-    // },
     {
       name: 'mehfil',
       handler({
@@ -60,7 +52,6 @@ function Mehfil(): React.JSX.Element {
     if (!currMessage || !username) {
       return;
     }
-    // chatSocket.emit('mehfil', currMessage);
     mehfil(currMessage);
     setMessages(prev => [
       {
