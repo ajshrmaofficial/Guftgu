@@ -5,76 +5,101 @@ import {AuthStackProps} from '../utility/navigation/NavigationStackTypes';
 import Loader from '../components/Loader';
 import { useTheme } from '@react-navigation/native';
 
+interface RegisterFormData {
+  username: string
+  name: string
+  password: string
+  confirmPassword: string
+  error: string
+}
+
+interface ValidationFields{
+  hasLowerCase: boolean
+  hasUpperCase: boolean
+  hasNumber: boolean
+  hasSpecialChar: boolean
+  isUsernameValid: boolean
+  isNameValid: boolean
+}
+
 function Register({navigation}: AuthStackProps<"Register">): React.JSX.Element {
   const {register} = useAuthFunctions();
   const {colors} = useTheme();
-  const [username, setUsername] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [name, setName] = useState<string>('');
+  const [registerFormData, setRegisterFormData] = useState<RegisterFormData>({
+    username: '',
+    name: '',
+    password: '',
+    confirmPassword: '',
+    error: ''
+  });
+  const {username, name, password, confirmPassword, error} = registerFormData;
+  const [validationFields, setValidationFields] = useState<ValidationFields>({
+    hasLowerCase: false,
+    hasUpperCase: false,
+    hasNumber: false,
+    hasSpecialChar: false,
+    isUsernameValid: false,
+    isNameValid: false
+  })
+  const {hasLowerCase, hasUpperCase, hasNumber, hasSpecialChar, isUsernameValid, isNameValid} = validationFields;
   const [loading, setLoading] = useState<boolean>(false);
-  const [err, setErr] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [hasLowerCase, setHasLowerCase] = useState<boolean>(false);
-  const [hasUpperCase, setHasUpperCase] = useState<boolean>(false);
-  const [hasNumber, setHasNumber] = useState<boolean>(false);
-  const [hasSpecialChar, setHasSpecialChar] = useState<boolean>(false);
-  const [usernameIsValid, setUsernameIsValid] = useState<boolean>(false);
-  const [nameIsValid, setNameIsValid] = useState<boolean>(false);
 
   const validatePassword = (text: string): void => {
-    setPassword(text);
-    setHasLowerCase(/[a-z]/.test(text));
-    setHasUpperCase(/[A-Z]/.test(text));
-    setHasNumber(/\d/.test(text));
-    setHasSpecialChar(/[!@#$%^&*()_+]/.test(text));
+    setRegisterFormData({...registerFormData, password: text});
+    setValidationFields({...validationFields, 
+      hasLowerCase: /[a-z]/.test(text),
+      hasUpperCase: /[A-Z]/.test(text),
+      hasNumber: /\d/.test(text),
+      hasSpecialChar: /[!@#$%^&*()_+]/.test(text)
+    });
   }
 
   const validateUsername = (text: string): void => {
-    setUsername(text);
-    setUsernameIsValid(/^[a-z0-9._-]{3,}$/.test(text))
+    setRegisterFormData({...registerFormData, username: text});
+    setValidationFields({...validationFields, isUsernameValid: /^[a-z0-9._-]{3,}$/.test(text)});
   }
 
   const validateName = (text: string): void => {
-    setName(text);
-    setNameIsValid(/^[a-zA-Z-' ]*[a-zA-Z-' ][a-zA-Z-' ]*$/.test(text))
+    setRegisterFormData({...registerFormData, name: text});
+    setValidationFields({...validationFields, isNameValid: /^[a-zA-Z-' ]*[a-zA-Z-' ][a-zA-Z-' ]*$/.test(text)});
   }
 
   const comparePasswords = (text: string): void => {
-    setConfirmPassword(text);
+    setRegisterFormData({...registerFormData, confirmPassword: text});
     if(text!==password){
-        setErr("Passwords do not match");
+        setRegisterFormData({...registerFormData, error: "Passwords do not match"});
     }
   }
 
   const submitCredentials = async() => {
     if(!name || !username || !password || !confirmPassword){
-      setErr("Enter all details !!");
+      setRegisterFormData({...registerFormData, error: "Enter all details"});
       return;
     }
     if(!hasLowerCase || !hasUpperCase || !hasNumber || !hasSpecialChar){
-      setErr("Enter valid password !!!");
+      setRegisterFormData({...registerFormData, error: "Enter valid password"});
       return;
     }
-    if(!nameIsValid || !name.trim() || name.length>20){
-      setErr("Enter valid name !!!");
+    if(!isNameValid || !name.trim() || name.length>20){
+      setRegisterFormData({...registerFormData, error: "Enter a valid name"});
       return;
     }
-    if(!usernameIsValid){
-      setErr("Enter valid username !!!");
+    if(!isUsernameValid){
+      setRegisterFormData({...registerFormData, error: "Enter a valid username"});
       return;
     }
     if(password!==confirmPassword){
-        setErr("Passwords do not match !!!");
-        return;
+      setRegisterFormData({...registerFormData, error: "Passwords do not match"});
+      return;
     }
     setLoading(true);
     const res = await register(username, password, name);
     if(res){
-      setErr(res);
+      setRegisterFormData({...registerFormData, error: res});
       return;
     }
     setLoading(false);
-    setErr("Redirecting to Login...");
+    setRegisterFormData({...registerFormData, error: "Redirecting to login..."});
     setTimeout(()=>{
         navigation.navigate("Login")
     }, 1500);
@@ -138,7 +163,7 @@ function Register({navigation}: AuthStackProps<"Register">): React.JSX.Element {
               <TouchableOpacity onPress={navigateLogin}>
                 <Text className='text-blue-700'>Login</Text>
               </TouchableOpacity>
-            <Text className="text-red-500">{err}</Text>
+            <Text className="text-red-500">{error}</Text>
           </View>
         </View>
       )}
