@@ -1,10 +1,11 @@
 import server from '../axiosConfig';
-import {useAppSetState} from '../redux/useAppState';
-import {setAuthName, setAuthToken, setAuthUsername} from '../redux/authSlice';
+// import {useAppSetState} from '../redux/useAppState';
+// import {setAuthName, setAuthToken, setAuthUsername} from '../redux/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect } from 'react';
+// import { useEffect } from 'react';
 import { Dimensions } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import useUserStore from '../store/userStore';
 
 export interface Message {
   senderUsername: string;
@@ -47,7 +48,10 @@ export interface LocationPayload {
 }
 
 export function useAuthFunctions() {
-  const setState = useAppSetState();
+  // const setState = useAppSetState();
+  const setAuthToken = useUserStore(state => state.setAuthToken)
+  const setName = useUserStore(state => state.setName)
+  const setUsername = useUserStore(state => state.setUsername)
   const login = async (username: string, password: string) => { // This function is used to login the user
     try {
       const response = await server.post('/auth/login', {
@@ -56,10 +60,13 @@ export function useAuthFunctions() {
       });
       if (response.status === 200) {
         console.log(response.data)
-        setState(setAuthToken(response.data.authToken));
-        setState(setAuthUsername(username));
-        setState(setAuthName(response.data.name))
+        // setState(setAuthToken(response.data.authToken));
+        // setState(setAuthUsername(username));
+        // setState(setAuthName(response.data.name))
         // setAuthData({authToken: response.data.authToken, username: username});
+        setAuthToken(response.data.authToken)
+        setName(response.data.name)
+        setUsername(username)
         AsyncStorage.setItem('authToken', response.data.authToken);
         AsyncStorage.setItem('name', response.data.name);
         AsyncStorage.setItem('username', username);
