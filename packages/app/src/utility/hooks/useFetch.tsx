@@ -1,9 +1,7 @@
-import React, { useEffect } from "react";
-import { useAppGetState, useAppSetState } from "../redux/useAppState";
+import { useEffect } from "react";
 import server from "../axiosConfig";
 
-function useFetch(authToken: string | null, username: string | null){
-    const setState = useAppSetState();
+function useFetchUserData(authToken: string | null, username: string | null){
     
     useEffect(()=>{
         if(!authToken){
@@ -37,4 +35,4 @@ function useFetch(authToken: string | null, username: string | null){
     }, [authToken])
 }
 
-export default useFetch
+export default useFetchUserData
