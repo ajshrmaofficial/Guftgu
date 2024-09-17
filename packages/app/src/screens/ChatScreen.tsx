@@ -9,18 +9,17 @@ import {ReceiveEvent, SendEvent, useSocketReceiveEvents, useSocketSendEvents} fr
 import {getChats, saveChat} from '../utility/dbModel/db';
 import {Message as MessageModel} from '../utility/dbModel/dbModel';
 import {AppNavigationProps} from '../utility/navigation/NavigationStackTypes';
-import useAuth from '../utility/hooks/useAuth';
-import {chatSocket} from '../utility/socket/socketConfig';
 import {FlashList} from '@shopify/flash-list';
 import { useTheme } from '@react-navigation/native';
 import { Message } from '../utility/definitionStore'
+import useUserStore from '../utility/store/userStore';
 
 function ChatScreen({
   navigation,
   route,
 }: AppNavigationProps): React.JSX.Element {
-  const myUsername = 'me';
-  const {username} = useAuth();
+  const usernameAliasForDB = 'me';
+  const username = useUserStore(state => state.username);
   const friendUsername = (route.params as {username: string}).username;
   const [messages, setMessages] = useState<Message[]>([] as Message[]);
   const [currMessage, setCurrMessage] = useState<string>('');
@@ -78,11 +77,11 @@ function ChatScreen({
     //   console.log(response.status);
     // });
     guftgu(currMessage);
-    await saveChat(myUsername, friendUsername, currMessage);
+    await saveChat(usernameAliasForDB, friendUsername, currMessage);
     setMessages(prev => [
         {
           message: currMessage,
-          senderUsername: myUsername,
+          senderUsername: usernameAliasForDB,
           receiverUsername: friendUsername,
         },
       ...prev,
@@ -101,10 +100,10 @@ function ChatScreen({
         fromUsername: string;
       }) {
         console.log(message, fromUsername);
-        saveChat(fromUsername, myUsername, message);
+        saveChat(fromUsername, usernameAliasForDB, message);
         setMessages(prev => [
           ...prev,
-          {message, senderUsername: fromUsername, receiverUsername: myUsername},
+          {message, senderUsername: fromUsername, receiverUsername: usernameAliasForDB},
         ]);
       },
     },
@@ -122,9 +121,9 @@ function ChatScreen({
         inverted={true}
         renderItem={({item}) => (
           <View
-            style={{backgroundColor: item.senderUsername === myUsername ? colors.primary : colors.border}}
+            style={{backgroundColor: item.senderUsername === usernameAliasForDB ? colors.primary : colors.border}}
             className={`my-2 p-2 rounded-md ${
-              item.senderUsername === myUsername ? 'self-end' : 'self-start'
+              item.senderUsername === usernameAliasForDB ? 'self-end' : 'self-start'
             }`}>
             <Text style={{color: colors.text}} className="text-base">{item.message}</Text>
           </View>
