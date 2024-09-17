@@ -1,17 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import { Text, TouchableOpacity, View} from 'react-native';
-import useAuth from '../utility/hooks/useAuth';
 import {
   connectChatSocket,
 } from '../utility/socket/socketConfig';
 import {ReceiveEvent, useSocketReceiveEvents} from '../utility/socket/useSocketEvents';
-// import {useUser} from '../utility/context/UserContext';
 import { AppNavigationProps } from '../utility/navigation/NavigationStackTypes';
 import { FlashList } from '@shopify/flash-list';
 import { useTheme } from '@react-navigation/native';
-import { useAppSetState } from '../utility/redux/useAppState';
-import { setFriendLocations } from '../utility/redux/userSlice';
-import useFetch from '../utility/hooks/useFetch';
+import useFetchUserData from '../utility/hooks/useFetch';
+import useUserStore from '../utility/store/userStore';
 // import useLocation from '../utility/hooks/useLocation';
 
 interface Friend{
@@ -20,10 +17,9 @@ interface Friend{
 }
 
 function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
-  const {authToken, username} = useAuth();
-  // const {setFriendLocations} = useUser();
-  useFetch(authToken, username)
-  const setState = useAppSetState();
+  const authToken = useUserStore(state => state.authToken);
+  const username = useUserStore(state => state.username);
+  useFetchUserData(authToken, username);
   const [error, setError] = useState<string | null>('');
   // const {} = useLocation();
   const {colors} = useTheme();
@@ -47,7 +43,7 @@ function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
     {
       name: 'location',
       handler({location, fromUsername}) {
-        setState(setFriendLocations({location, fromUsername}));
+        // setState(setFriendLocations({location, fromUsername}));
       },
     },
   ];
