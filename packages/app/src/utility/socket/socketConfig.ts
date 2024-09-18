@@ -1,5 +1,6 @@
 import { io } from "socket.io-client";
 import Config from "react-native-config";
+import useUserStore from "../store/userStore";
 
 const {ENV, DEV_SERVER_IP, PROD_SERVER_IP} = Config;
 
@@ -12,7 +13,9 @@ const chatSocket = io(URL + '/chat', {   // TODO: To decide whether to use singl
 })
 
 
-function connectChatSocket(token: string){
+function connectChatSocket(){
+    const token = useUserStore(state => state.authToken);
+
     chatSocket.auth = {token};
     chatSocket.connect()
 }

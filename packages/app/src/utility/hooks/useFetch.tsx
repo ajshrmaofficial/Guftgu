@@ -1,10 +1,14 @@
 import { useEffect } from "react";
 import server from "../axiosConfig";
+import useUserStore from "../store/userStore";
 
-function useFetchUserData(authToken: string | null, username: string | null){
+function useFetchUserData(){
+
+    const username = useUserStore(state => state.username);
+    const authToken = useUserStore(state => state.authToken);
     
     useEffect(()=>{
-        if(!authToken){
+        if(!authToken || !username){
             return;
         }
         const config = {
@@ -32,7 +36,7 @@ function useFetchUserData(authToken: string | null, username: string | null){
 
         fetchMessages();
         fetchFriends();
-    }, [authToken])
+    }, [authToken, username])
 }
 
 export default useFetchUserData

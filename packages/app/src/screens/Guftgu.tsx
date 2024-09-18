@@ -17,9 +17,10 @@ interface Friend{
 }
 
 function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
-  const authToken = useUserStore(state => state.authToken);
-  const username = useUserStore(state => state.username);
-  useFetchUserData(authToken, username);
+  // const authToken = useUserStore(state => state.authToken);
+  // const username = useUserStore(state => state.username);
+  connectChatSocket();
+  useFetchUserData();
   const [error, setError] = useState<string | null>('');
   // const {} = useLocation();
   const {colors} = useTheme();
@@ -53,12 +54,6 @@ function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
     navigation.navigate("ChatScreen", {username: friendUsername});
   }
 
-  useEffect(() => {
-    if (!authToken || !username) {
-      return;
-    }
-    connectChatSocket(authToken);
-  }, []);
 
   function EmptyChatComponent(): React.JSX.Element {
     return (
