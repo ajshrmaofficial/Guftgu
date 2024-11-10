@@ -29,6 +29,12 @@ jobs:
             exit 0
           fi
 
+      - name: Set Heroku stack to container
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          heroku stack:set container --app backendapi-git
+          
       - name: Heroku Actions - login, push, and release
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
