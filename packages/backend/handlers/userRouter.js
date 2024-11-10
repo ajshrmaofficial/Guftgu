@@ -32,9 +32,9 @@ userRouter.get("/fetchUndeliveredMessages", tryCatch(async (req, res) => {
     // TODO: Have to change error codes and error messages because username is not being passed by user now..
     if (!receiverUsername) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
 
-    const undeliveredMessages = await messageModel.find({ receiver: receiverUsername });
-    if(undeliveredMessages.length === 0) return res.status(200).send("No undelivered messages found");
-    await messageModel.deleteMany({ receiver: receiverUsername });
+    const undeliveredMessages = await messageModel.find({ receiver: receiverUsername }).lean();
+    if(undeliveredMessages.length === 0) return res.status(204).send("No undelivered messages found");
+    await messageModel.deleteMany({ receiver: receiverUsername, _id: { $in: undeliveredMessages.map(message => message._id)} });
     res.status(200).send(undeliveredMessages);
 }));
 
@@ -45,7 +45,7 @@ userRouter.get("/fetchFriendList", tryCatch(async (req, res) => {
     // TODO: Have to change error code & error message because username is not being passed by user now..
     if (!username) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
 
-    const user = await userModel.findOne({ username: username });
+    const user = await userModel.findOne({ username: username }, { _id: 1 }).lean();
     if (!user) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
 
 
@@ -66,13 +66,13 @@ userRouter.get("/searchUser", tryCatch(async (req, res) => {
     const currUsername = req.user.username;
     
     if (!username || !currUsername) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
-    const user1 = await userModel.findOne({ username: currUsername });
-    const user2 = await userModel.findOne({ username: username });
+    // const user1 = await userModel.findOne({ username: currUsername });
+    // const user2 = await userModel.findOne({ username: username });
+    const [user1, user2] = await Promise.all([userModel.findOne({ username: currUsername }), userModel.findOne({ username: username })]);
     if (!user1 || !user2) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
 
     const friend = await friendshipModel.findOne({ $or: [{user1: user1._id, user2: user2._id}, {user1: user2._id, user2: user1._id}] })
-        .populate('user1', 'username name -_id')
-        .populate('user2', 'username name -_id'); 
+        .select('user1 user2 status').lean();
     if (friend) {
         if(friend.user1.username === currUsername) {
             const friendInfo = {username: friend.user2.username, name: friend.user2.name, status: friend.status, party: 2};

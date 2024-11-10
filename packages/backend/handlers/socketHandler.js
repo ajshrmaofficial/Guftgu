@@ -107,7 +107,7 @@ function registerEventHandlers(socket, chatNamespace) {
         receiver: toUsername,
         message,
       });
-      await msg.save();
+      await msg.save({w: 0});
     }
   };
 

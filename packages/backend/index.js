@@ -5,9 +5,9 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 // const { sessionMiddleware, redisClient } = require("./auth/sessionManager");
 const {authRouter, socketHandler} = require("./handlers");
-const {messageModel} = require("./schema");
+const {connectMongoose} = require("./schema");
 const {userRouter} = require("./handlers");
-const {userModel} = require("./schema");
+// const {userModel} = require("./schema");
 // const { firebase } = require("./utils/firebase");
 
 var httpServer; // setup for https server in production
@@ -68,6 +68,17 @@ io.engine.on("connection_error", (err) => {
 
 socketHandler(io);
 
-httpServer.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
-});
+const startServer = async () => {
+  try {
+    await connectMongoose();
+
+    httpServer.listen(process.env.PORT, () => {
+      console.log(`Server is running on port ${process.env.PORT}`);
+    });
+  } catch (error) {
+    console.error("Error starting server: ", error);
+    process.exit(1);
+  }
+};
+
+startServer();

@@ -6,6 +6,8 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
         lowercase: true,
+        trim: true,
+        index: true
     },
     passwd: {
         type: String,
@@ -18,8 +20,9 @@ const userSchema = new mongoose.Schema({
     fcmToken: {
         type: String,
         default: null,
+        sparse: true
     }
-})
+}, {timestamps: true})
 
 userSchema.statics.isUsernameTaken = async function(username){
     if(!username) throw new Error('Username is required')

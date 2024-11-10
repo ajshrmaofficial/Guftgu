@@ -1,5 +1,5 @@
 const express = require("express");
-const { randomBytes } = require("node:crypto");
+// const { randomBytes } = require("node:crypto");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const {userModel} = require("../schema");
@@ -12,16 +12,26 @@ const {AppError} = require("../utils");
 // const redisClient = sessionManager.redisClient;
 const jwt = require("jsonwebtoken");
 
-async function connectMongoose() {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {dbName: "userDB"});
-    console.log("connected to mongoose database");
-  } catch (err) {
-    console.log(err);
-  }
-}
+// async function connectMongoose() {
+//   try {
+//     await mongoose.connect(process.env.MONGO_URI, {
+//       dbName: "userDB",
+//       maxPoolSize: 5,
+//       minPoolSize: 1,
+//       maxIdleTimeMS: 10000,
+//       serverSelectionTimeoutMS: 5000,
+//       socketTimeoutMS: 45000,
+//       family: 4,
+//       useNewUrlParser: true,
+//     });
+//     console.log("connected to mongoose database");
+//   } catch (err) {
+//     console.error("MongoDB connection error: ",err);
+//     process.exit(1);
+//   }
+// }
 
-connectMongoose();
+// connectMongoose();
 
 // authRouter.get("/isLoggedIn", async (req, res) => {
 //   if (req.cookies?.sessionID) {
