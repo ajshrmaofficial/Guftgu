@@ -3,43 +3,40 @@ name: Deploy Backend
 on:
   push:
     branches: [ development ]
-  pull_request:
+    paths:
+      - 'packages/backend/**'
+      - '.github/workflows/dev_backend.yml'
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      
-      - name: Use Node.js 18
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
 
-      - name: Install dependencies
-        run: npm install
+      - name: Login to Heroku Container Registry
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:login
 
-      - name: Check for changes in backend
+      - name: Build and push
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
         run: |
-          git diff --name-only HEAD~ HEAD | grep -q "packages/backend/"
-          if [[ $? -ne 0 ]]; then
-            echo "No changes detected in backend directory, skipping deployment."
-            exit 0
-          fi
+          docker build \
+            --build-arg MONGODB_URI=$MONGODB_URI \
+            -t registry.heroku.com/backendapi-git/web \
+            -f Dockerfile .
+          docker push registry.heroku.com/backendapi-git/web
 
-      - name: Set Heroku stack to container
+      - name: Release
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:release web --app backendapi-git
+
+      - name: Set config vars
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
-          heroku stack:set container --app backendapi-git
-          
-      - name: Heroku Actions - login, push, and release
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: |
-          cd ./packages/backend
-          heroku container:login
-          heroku container:push web --app backendapi-git
-          heroku container:release web --app backendapi-git
+          heroku config:set NODE_ENV=production --app backendapi-git
+          heroku config:set MONGODB_URI=${{ secrets.MONGODB_URI }} --app backendapi-git
