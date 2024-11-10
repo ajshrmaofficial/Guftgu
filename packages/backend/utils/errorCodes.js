@@ -23,3 +23,8 @@ exports.SERVER_ERROR = {
     statusCode: 500,
     errorCode: "SERVER_ERROR"
 };
+exports.INVALID_INPUT = {
+    message: "Invalid input !!",
+    statusCode: 400,
+    errorCode: "INVALID_INPUT"
+}

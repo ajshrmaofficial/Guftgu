@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "332479041791",
+    "project_id": "guftgu-d7fb6",
+    "storage_bucket": "guftgu-d7fb6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:332479041791:android:707cc65405a331e9d5fcca",
+        "android_client_info": {
+          "package_name": "com.guftgu"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgrT1lVF3t-y3kuVis6SsF-QZUaXZX00A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

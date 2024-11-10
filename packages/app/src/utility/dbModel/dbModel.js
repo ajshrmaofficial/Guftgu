@@ -1,15 +1,24 @@
 import {Model} from '@nozbe/watermelondb';
 import {date, readonly, text} from '@nozbe/watermelondb/decorators';
 
-class User extends Model {
-  static table = 'users';
+// class User extends Model {
+//   static table = 'users';
+
+//   @text('username') username;
+//   @text('name') name;
+//   @text('phone') phone;
+// }
+
+class FriendModel extends Model {
+  static table = 'friends';
 
   @text('username') username;
   @text('name') name;
-  @text('phone') phone;
+  @text('status') status;
+  @text('party') party;
 }
 
-class Message extends Model {
+class MessageModel extends Model {
   static table = 'messages';
 
   @text('sender_username') senderUsername;
@@ -18,4 +27,13 @@ class Message extends Model {
   @readonly @date('created_at') createdAt;
 }
 
-export {User, Message};
+class ChatListModel extends Model {
+  static table = 'chatList';
+
+  @text('username') username;
+  @text('name') name;
+  @text('lastMessage') lastMessage;
+  @readonly @date('updated_at') updatedAt;
+}
+
+export {FriendModel, MessageModel, ChatListModel};

@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Login from '../../screens/Login';
 import Register from '../../screens/Register';
@@ -14,17 +14,14 @@ import Map from '../../screens/Map';
 import ChatScreen from '../../screens/ChatScreen';
 import Profile from '../../screens/Profile';
 import Header from '../../components/Header';
-import TabBarIcon from '../../components/TabBarIcon';
+import TabBarIcon from '../../components/utility/TabBarIcon';
 import ChatIcon from '../../../assets/svg/chatbubble.svg';
 import ChatIconOutline from '../../../assets/svg/chatbubble-outline.svg';
 import GroupChatIcon from '../../../assets/svg/chatbubbles.svg';
 import GroupChatIconOutline from '../../../assets/svg/chatbubbles-outline.svg';
 import LocationIcon from '../../../assets/svg/location.svg';
 import LocationIconOutline from '../../../assets/svg/location-outline.svg';
-import {useTheme} from '@react-navigation/native';
-import {BottomSheetModal} from '@gorhom/bottom-sheet';
-import TabHeaderModals from '../../components/TabHeaderModals';
-import { bottomModalCollection } from '../definitionStore';
+import { PortalHost } from '@gorhom/portal';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const AppStack = createNativeStackNavigator<AppStackParamList>();
@@ -40,17 +37,12 @@ function AuthNavigationStack(): React.JSX.Element {
 }
 
 function AppTabs(): React.JSX.Element {
-  const bottomModalRef: bottomModalCollection = {
-    menuModalRef: useRef<BottomSheetModal>(null),
-    addFriendModalRef: useRef<BottomSheetModal>(null),
-    searchModalRef: useRef<BottomSheetModal>(null),
-  };
   return (
     <>
       <AppTab.Navigator
         screenOptions={{
           header: prop => (
-            <Header props={prop} bottomModalRef={bottomModalRef} />
+            <Header props={prop}/>
           ),
         }}>
         <AppTab.Screen
@@ -58,6 +50,7 @@ function AppTabs(): React.JSX.Element {
           component={Guftgu}
           options={{
             tabBarShowLabel: false,
+            tabBarActiveBackgroundColor: '#fff',
             tabBarIcon: ({color, size, focused}) => (
               <TabBarIcon
                 color={color}
@@ -96,7 +89,7 @@ function AppTabs(): React.JSX.Element {
           }}
         />
       </AppTab.Navigator>
-      <TabHeaderModals {...bottomModalRef} />
+      <PortalHost name='bottomSheetPortal'/>
     </>
   );
 }

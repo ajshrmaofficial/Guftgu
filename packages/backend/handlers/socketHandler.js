@@ -1,9 +1,10 @@
 // const { userModel } = require("../schema");
-const { messageModel } = require("../schema")
+const { messageModel } = require("../schema");
 // const { firebase } = require("../utils");
 const socketAuth = require("./socketAuth");
 
-const onlineUsers = new Map();
+// const onlineUsers = new Map();
+const onlineUsers = new Set();
 
 // const sendNotification = async (
 //   messageBody,
@@ -76,28 +77,28 @@ function registerEventHandlers(socket, chatNamespace) {
     }
   };
 
-  const mehfilMessageReceived = (message) => {
-    console.log(`Recieved message from ${socket.username}: `, message);
+  const groupChatMessageReceived = (message) => {
+    console.log(`Received message from ${socket.username}: `, message);
     //   sendNotification(message, 'Mehfil', '', myUsername); //TODO: Have to fix notifications at frontend...
-    socket.broadcast.emit("mehfil", {
+    socket.broadcast.emit("chat:group", {
       message,
       fromID: socket.id,
       fromUsername: socket.username,
     });
   };
 
-  const guftguMessageReceived = async (messageData, callback) => {
+  const personalChatMessageReceived = async (messageData, callback) => {
     const { message, toUsername } = messageData;
 
     console.log(
-      `Recieved guftgu from ${socket.username} to ${toUsername}: `,
+      `Recieved chat:personal from ${socket.username} to ${toUsername}: `,
       message
     );
     //   sendNotification(message, 'Guftgu', toUsername, myUsername); //TODO: Have to fix notifications at frontend...
     if (onlineUsers.has(toUsername)) {
       chatNamespace
         .to(toUsername)
-        .emit("guftgu", { message, fromUsername: socket.username });
+        .emit("chat:personal", { message, fromUsername: socket.username });
       callback({
         status: "received",
       });
@@ -119,12 +120,34 @@ function registerEventHandlers(socket, chatNamespace) {
     });
   };
 
+  const friendRequestReceived = (friendRequest) => {
+    const { friendUsername } = friendRequest;
+    console.log(
+      `Friend request received from ${socket.username} to ${friendUsername}`
+    );
+    chatNamespace.to(friendRequest).emit("friendRequest:received", {
+      fromUsername: socket.username,
+    });
+  };
+
+  const friendRequestAccepted = (friendRequest) => {
+    const { friendUsername } = friendRequest;
+    console.log(
+      `Friend request accepted from ${socket.username} to ${friendUsername}`
+    );
+    chatNamespace.to(friendRequest).emit("friendRequest:accepted", {
+      fromUsername: socket.username,
+    });
+  }
+
   return {
     socketDisconnected,
     socketIsOnline,
-    mehfilMessageReceived,
-    guftguMessageReceived,
+    groupChatMessageReceived,
+    personalChatMessageReceived,
     receivedSocketLocation,
+    friendRequestReceived,
+    friendRequestAccepted
   };
 }
 
@@ -137,9 +160,11 @@ module.exports = (io) => {
     const {
       socketDisconnected,
       socketIsOnline,
-      mehfilMessageReceived,
-      guftguMessageReceived,
+      groupChatMessageReceived,
+      personalChatMessageReceived,
       receivedSocketLocation,
+      friendRequestReceived,
+      friendRequestAccepted
     } = registerEventHandlers(socket, chatNamespace);
 
     console.log(
@@ -151,18 +176,21 @@ module.exports = (io) => {
     });
 
     socket.join(socket.username);
-    onlineUsers.set(socket.username, socket.username);
+    // onlineUsers.set(socket.username, socket.username);
+    onlineUsers.add(socket.username);
 
     socket.on("disconnect", socketDisconnected);
 
     socket.on("isOnline", socketIsOnline);
 
-    socket.on("mehfil", mehfilMessageReceived);
+    socket.on("chat:group", groupChatMessageReceived);
 
-    socket.on("guftgu", guftguMessageReceived);
+    socket.on("chat:personal", personalChatMessageReceived);
 
     socket.on("location", receivedSocketLocation);
 
-    // socket.on("friendRequest:sent")
+    socket.on("friendRequest:sent", friendRequestReceived);
+
+    socket.on("friendRequest:accepted", friendRequestAccepted);
   });
 };

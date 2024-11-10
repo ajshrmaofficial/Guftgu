@@ -16,7 +16,7 @@ export type AppTabParamList = {
 
 export type AppStackParamList = {
     AppTabs: NavigatorScreenParams<AppTabParamList>;
-    ChatScreen: { username: string };
+    ChatScreen: { username: string, name: string };
     Profile: undefined;
 }
 

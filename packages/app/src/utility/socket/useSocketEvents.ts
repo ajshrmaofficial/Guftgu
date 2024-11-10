@@ -1,17 +1,17 @@
 import {useCallback, useEffect, useMemo} from 'react';
 import {chatSocket} from './socketConfig';
+import { socketEvent } from './socketEvents';
+// export interface ReceiveEvent {
+//   name: string;
+//   handler(...args: any[]): any;
+// }
 
-export interface ReceiveEvent {
-  name: string;
-  handler(...args: any[]): any;
-}
+// export interface SendEvent {
+//   name: string;
+//   prepare?: (...args: any[]) => any;
+// }
 
-export interface SendEvent {
-  name: string;
-  prepare?: (...args: any[]) => any;
-}
-
-export function useSocketReceiveEvents(events: ReceiveEvent[]) {
+export function useSocketEvents(events: socketEvent[]) {
   useEffect(() => {
     for (const event of events) {
       chatSocket.on(event.name, event.handler);
@@ -39,13 +39,13 @@ export function useSocketReceiveEvents(events: ReceiveEvent[]) {
 //   return sendEventHandlers;
 // }
 
-export function useSocketSendEvents(events: SendEvent[]){
-  const handlers: Record<string, (...args: any[])=>void> = {}
-  events.map(value => {
-    handlers[value.name] = (...args: any[]) => {
-      const data = value.prepare ? value.prepare(...args) : args;
-      chatSocket.emit(value.name, data);
-    } 
-  })
-  return handlers;
-}
+// export function useSocketSendEvents(events: SendEvent[]){
+//   const handlers: Record<string, (...args: any[])=>void> = {}
+//   events.map(value => {
+//     handlers[value.name] = (...args: any[]) => {
+//       const data = value.prepare ? value.prepare(...args) : args;
+//       chatSocket.emit(value.name, ...data);
+//     } 
+//   })
+//   return handlers;
+// }

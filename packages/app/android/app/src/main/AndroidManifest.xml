@@ -7,8 +7,8 @@
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
-      android:icon="@mipmap/guftgu"
-      android:roundIcon="@mipmap/guftgu"
+      android:icon="@mipmap/ic_launcher"
+      android:roundIcon="@mipmap/ic_launcher"
       android:allowBackup="false"
       android:theme="@style/AppTheme">
       <activity
@@ -26,5 +26,8 @@
       <meta-data
         android:name="com.google.android.geo.API_KEY"
         android:value="AIzaSyAWkNJiJoYfyNGfie3r6muGA8KcaHFVV-k"/>
+      <meta-data 
+        android:name="com.google.firebase.messaging.default_notification_icon" 
+        android:resource="@drawable/ic_stat_name"/>
     </application>
 </manifest>

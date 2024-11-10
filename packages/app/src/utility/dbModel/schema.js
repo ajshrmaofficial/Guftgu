@@ -4,11 +4,12 @@ const userSchema = appSchema({
     version: 1,
     tables: [
         tableSchema({
-            name: "users",
+            name: "friends",
             columns: [
-                {name: 'username', type: 'string'},
+                {name: 'username', type: 'string', isIndexed: true},
                 {name: 'name', type: 'string'},
-                {name: 'phone', type: 'string'},
+                {name: 'status', type: 'string'},
+                {name: 'party', type: 'number'}
             ]
         }),
         tableSchema({
@@ -18,6 +19,15 @@ const userSchema = appSchema({
                 {name: 'receiver_username', type: 'string', isIndexed: true},
                 {name: 'message', type: 'string'},
                 {name: 'created_at', type: 'number'},
+            ]
+        }),
+        tableSchema({
+            name: "chatList",
+            columns: [
+                {name: 'username', type: 'string', isIndexed: true},
+                {name: 'name', type: 'string'},
+                {name: 'lastMessage', type: 'string'},
+                {name: 'updated_at', type: 'number'},
             ]
         })
     ]

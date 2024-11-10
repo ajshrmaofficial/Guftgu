@@ -1,72 +1,72 @@
-import React, {useState} from 'react';
-import {Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {ReceiveEvent, SendEvent, useSocketReceiveEvents, useSocketSendEvents} from '../utility/socket/useSocketEvents';
-import {useTheme} from '@react-navigation/native';
-import {FlashList} from '@shopify/flash-list';
-import {Message} from '../utility/definitionStore';
-import useUserStore from '../utility/store/userStore';
+import React from 'react';
+import {View} from 'react-native';
+// import {ReceiveEvent, SendEvent, useSocketReceiveEvents, useSocketSendEvents} from '../utility/socket/useSocketEvents';
+// import {useTheme} from '@react-navigation/native';
+// import {FlashList} from '@shopify/flash-list';
+// import {Message} from '../utility/definitionStore';
+// import useUserStore from '../utility/store/userStore';
 
 function Mehfil(): React.JSX.Element {
-  const username = useUserStore(state => state.username);
-  const myUsername = 'me';
-  const [messages, setMessages] = useState<Message[]>([] as Message[]);
-  const [currMessage, setCurrMessage] = useState<string>('');
-  const [error, setError] = useState<string | null>('');
-  const {colors} = useTheme();
+  // const username = useUserStore(state => state.username);
+  // const myUsername = 'me';
+  // const [messages, setMessages] = useState<Message[]>([] as Message[]);
+  // const [currMessage, setCurrMessage] = useState<string>('');
+  // const [error, setError] = useState<string | null>('');
+  // const {colors} = useTheme();
 
-  const events: ReceiveEvent[] = [
-    {
-      name: 'connect_error',
-      handler(err: any) {
-        setError('Connection Error...');
-      },
-    },
-    {
-      name: 'mehfil',
-      handler({
-        message,
-        fromUsername,
-      }: {
-        message: string;
-        fromUsername: string;
-      }) {
-        console.log(message, fromUsername);
-        setMessages(prev => [
-          ...prev,
-          {message, senderUsername: fromUsername, receiverUsername: myUsername},
-        ]);
-      },
-    },
-  ];
-  useSocketReceiveEvents(events);
+  // const events: ReceiveEvent[] = [
+  //   {
+  //     name: 'connect_error',
+  //     handler(err: any) {
+  //       setError('Connection Error...');
+  //     },
+  //   },
+  //   {
+  //     name: 'mehfil',
+  //     handler({
+  //       message,
+  //       fromUsername,
+  //     }: {
+  //       message: string;
+  //       fromUsername: string;
+  //     }) {
+  //       console.log(message, fromUsername);
+  //       setMessages(prev => [
+  //         ...prev,
+  //         {message, senderUsername: fromUsername, receiverUsername: myUsername},
+  //       ]);
+  //     },
+  //   },
+  // ];
+  // useSocketReceiveEvents(events);
 
-  const SenderEvents: SendEvent[] = [
-    {
-      name: 'mehfil',
-    }
-  ]
+  // const SenderEvents: SendEvent[] = [
+  //   {
+  //     name: 'mehfil',
+  //   }
+  // ]
 
-  const {mehfil} = useSocketSendEvents(SenderEvents);
+  // const {mehfil} = useSocketSendEvents(SenderEvents);
 
-  const sendMessage = (): void => {
-    if (!currMessage || !username) {
-      return;
-    }
-    mehfil(currMessage);
-    setMessages(prev => [
-      {
-        message: currMessage,
-        senderUsername: myUsername,
-        receiverUsername: 'others',
-      },
-      ...prev,
-    ]);
-    setCurrMessage('');
-  };
+  // const sendMessage = (): void => {
+  //   if (!currMessage || !username) {
+  //     return;
+  //   }
+  //   mehfil(currMessage);
+  //   setMessages(prev => [
+  //     {
+  //       message: currMessage,
+  //       senderUsername: myUsername,
+  //       receiverUsername: 'others',
+  //     },
+  //     ...prev,
+  //   ]);
+  //   setCurrMessage('');
+  // };
 
   return (
     <View className="h-full w-full">
-      <FlashList
+      {/* <FlashList
         data={messages}
         estimatedItemSize={60}
         inverted={true}
@@ -106,7 +106,7 @@ function Mehfil(): React.JSX.Element {
           className="p-2 rounded-2xl justify-center h-9">
           <Text style={{color: colors.border}}>Send</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 }

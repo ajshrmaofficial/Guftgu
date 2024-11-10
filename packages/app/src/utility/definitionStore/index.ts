@@ -1,22 +1,19 @@
-import server from '../axiosConfig';
-// import {useAppSetState} from '../redux/useAppState';
-// import {setAuthName, setAuthToken, setAuthUsername} from '../redux/authSlice';
+import server from '../api/axiosConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// import { useEffect } from 'react';
 import { Dimensions } from 'react-native';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import useUserStore from '../store/userStore';
 
-export interface Message {
+export interface MessageType {
   senderUsername: string;
   receiverUsername: string;
   message: string;
 }
 
-export interface bottomModalCollection {
-  menuModalRef: React.RefObject<BottomSheetModal>;
-  addFriendModalRef: React.RefObject<BottomSheetModal>;
-  searchModalRef: React.RefObject<BottomSheetModal>;
+export interface FriendType {
+  username: string;
+  name: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'blocked' | 'notFriend';
+  party: 0 | 1 | 2;
 }
 
 const UNIT_KM_LAT = 0.009009009;
@@ -48,7 +45,6 @@ export interface LocationPayload {
 }
 
 export function useAuthFunctions() {
-  // const setState = useAppSetState();
   const setAuthToken = useUserStore(state => state.setAuthToken)
   const setName = useUserStore(state => state.setName)
   const setUsername = useUserStore(state => state.setUsername)
@@ -60,10 +56,6 @@ export function useAuthFunctions() {
       });
       if (response.status === 200) {
         console.log(response.data)
-        // setState(setAuthToken(response.data.authToken));
-        // setState(setAuthUsername(username));
-        // setState(setAuthName(response.data.name))
-        // setAuthData({authToken: response.data.authToken, username: username});
         setAuthToken(response.data.authToken)
         setName(response.data.name)
         setUsername(username)

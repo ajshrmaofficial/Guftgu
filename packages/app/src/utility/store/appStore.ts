@@ -11,7 +11,7 @@ interface AppStateSetter{
 }
 
 const useAppStore = create<AppState & AppStateSetter>()((set) => ({
-    theme: 'dark',
+    theme: 'light',
     locationPermission: false,
     setTheme: (theme: 'dark' | 'light') => set((state) => ({theme: theme})),
     setLocationPermission: (isPermitted: boolean) => set((state) => ({locationPermission: isPermitted}))

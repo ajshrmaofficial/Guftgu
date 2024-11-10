@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {Text, TextInput, TouchableOpacity, View} from 'react-native';
 import { useAuthFunctions } from '../utility/definitionStore';
 import {AuthStackProps} from '../utility/navigation/NavigationStackTypes';
-import Loader from '../components/Loader';
+import Loader from '../components/utility/Loader';
 import { useTheme } from '@react-navigation/native';
 
 interface LoginFormData{
