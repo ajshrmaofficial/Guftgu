@@ -122,12 +122,6 @@ userRouter.post("/acceptFriendRequest", tryCatch(async (req, res) => {
     res.status(200).send("Friend request accepted successfully");
 }));
 
-// TODO: This function will be used later for validation purposes
-// export const isFriend = async (username1, username2) => {
-//     const result = await friendshipModel.findOne({ $or: [{user1: username1, user2: username2}, {user1: username2, user2: username1}], $and: [{status: 'accepted'}] });
-//     if(result) return true;
-// }
-
 userRouter.use(errorHandlerMiddleware)
 
 module.exports = userRouter;
