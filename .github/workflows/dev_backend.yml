@@ -39,7 +39,7 @@ jobs:
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
-          heroku config:set MONGO_URI=${{ secrets.MONGODB_URI }} --app backendapi-git
-          heroku config:set JWT_SECRET=${{ secrets.JWT_SECRET }} --app backendapi-git          
-          heroku config:set USING_HTTPS=false --app backendapi-git          
+          heroku config:set MONGO_URI="${{ secrets.MONGODB_URI }}" --app "backendapi-git"
+          heroku config:set JWT_SECRET="${{ secrets.JWT_SECRET }}" --app "backendapi-git"          
+          heroku config:set USING_HTTPS="false" --app "backendapi-git"          
 
