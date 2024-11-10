@@ -3,7 +3,6 @@ const { messageModel } = require("../schema");
 // const { firebase } = require("../utils");
 const socketAuth = require("./socketAuth");
 
-// const onlineUsers = new Map();
 const onlineUsers = new Set();
 
 // const sendNotification = async (
@@ -176,7 +175,7 @@ module.exports = (io) => {
     });
 
     socket.join(socket.username);
-    // onlineUsers.set(socket.username, socket.username);
+
     onlineUsers.add(socket.username);
 
     socket.on("disconnect", socketDisconnected);
