@@ -17,6 +17,7 @@
     "preview:web": "lerna run preview:web",
     "dev:backend": "lerna run dev:backend",
     "start:backend": "lerna run start:backend",
+    "local:backend": "lerna run local:backend",
     "start:rn": "lerna run start:rn",
     "android": "lerna run android",
     "ios": "lerna run ios",
