@@ -4,7 +4,7 @@ import {
   AppNavigationStack,
   AuthNavigationStack,
 } from './NavigationStackProvider';
-import {lightTheme} from '../definitionStore';
+// import {lightTheme} from '../definitionStore';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {StatusBar} from 'react-native';
 import useUserStore from '../store/userStore';
@@ -23,7 +23,7 @@ function Navigator(): React.JSX.Element {
         barStyle="dark-content"
         translucent={true}
       />
-      <NavigationContainer theme={lightTheme}>
+      <NavigationContainer>
         {authToken ? <AppNavigationStack /> : <AuthNavigationStack />}
       </NavigationContainer>
     </SafeAreaProvider>
