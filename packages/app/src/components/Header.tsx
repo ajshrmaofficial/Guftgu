@@ -1,24 +1,24 @@
 import {BottomTabHeaderProps} from '@react-navigation/bottom-tabs';
 import React, { useEffect, useRef, useState } from 'react';
-import {Alert, Platform, StyleSheet, Text, ToastAndroid, TouchableOpacity, View} from 'react-native';
-import {useTheme} from '@react-navigation/native';
-import UserProfileIcon from '../../assets/svg/person.svg';
-import SearchIcon from '../../assets/svg/search.svg';
-import MenuIcon from '../../assets/svg/ellipsis-horizontal.svg';
-import AddPersonIcon from '../../assets/svg/person-add.svg';
+import {Alert, Platform, Text, ToastAndroid, TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import NetInfo from '@react-native-community/netinfo';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import AddFriendModal from './AddFriendModal';
 import MenuModal from './MenuModal';
-import VIcon from 'react-native-vector-icons/MaterialIcons'
+import Icon from 'react-native-vector-icons/MaterialIcons'
+import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import getThemeColors from '../utility/theme';
+import SearchChatModal from './SearchChatModal';
+// import Avatar from "react-native-avataaars";
 
 function Header({props}: {props: BottomTabHeaderProps}): React.JSX.Element {
-  const {colors} = useTheme();
+  const {background, text, icons} = getThemeColors();
   const insets = useSafeAreaInsets();
   const navigation = props.navigation;
   const routeName = props.route.name;
   const addFriendModalRef = useRef<BottomSheetModal>(null);
+  const searchChatModalRef = useRef<BottomSheetModal>(null);
   const menuModalRef = useRef<BottomSheetModal>(null);
   const [isConnected, setIsConnected] = useState<boolean | null>(true);
   
@@ -30,47 +30,35 @@ function Header({props}: {props: BottomTabHeaderProps}): React.JSX.Element {
     return () =>  unsubscribe();
   }, [])
 
-  const styles = StyleSheet.create({
-    headerSVG: {
-      height: 24,
-      width: 24,
-    },
-  });
-
   const HeaderIcon = (props: {name: string}): React.JSX.Element => {
 
-    let Icon, onPressFn: ()=>void;
+    let onPressFn: ()=>void;
 
     switch(props.name){
-      case 'Profile': Icon = <UserProfileIcon style={styles.headerSVG} fill={colors.border} />;
-                      onPressFn = ()=>navigation.navigate('Profile');
+      case 'Profile': onPressFn = ()=>navigation.navigate('Profile');
                       break;
       case 'Search': 
-      // Icon = <SearchIcon style={styles.headerSVG} fill={colors.border} />;
-      Icon = <VIcon name="search" size={24} color={colors.border} />; // TODO: migrate completely to react-native-vector-icons
-                     onPressFn = ()=>Platform.OS==='android' ? 
-                                    ToastAndroid.show('To be implemented...', ToastAndroid.SHORT)
-                                 :
-                                    Alert.alert('To be implemented...');
+                     onPressFn = ()=>searchChatModalRef.current?.present();
                      break;
-      case 'AddFriend': Icon = <AddPersonIcon style={styles.headerSVG} fill={colors.border} />;
-                        // onPressFn = ()=>openAddFriendModal();
+      case 'AddFriend': 
                         onPressFn = ()=>addFriendModalRef.current?.present();
                         break;
-      case 'Menu': Icon = <MenuIcon style={styles.headerSVG} fill={colors.border} />;
-                  //  onPressFn = ()=>openMenuModal();
+      case 'Menu': 
                   onPressFn = ()=>menuModalRef.current?.present();
                    break;    
-      default: Icon = "";
+      default: 
                onPressFn = ()=>{}
     }
 
     return(
       <TouchableOpacity onPress={onPressFn}>
         <View
-          style={{backgroundColor: colors.primary}}
-          className="rounded-full h-26 p-2 mx-2">
-          {Icon}
+          className={`rounded-full h-26 p-2 mx-2 ${background.card.tailwind}`}>
+          {/* {props.name!=='Menu' && <Icon name={props.name==='Profile' ? 'person' : props.name==='Search' ? 'search' : props.name==='AddFriend' ? 'person-add' : ''} size={24} color={icons.primary.hex}/>} */}
+          {(props.name!=='Menu' && props.name!='Profile') && <Icon name={props.name==='Search' ? 'search' : props.name==='AddFriend' ? 'person-add' : ''} size={24} color={icons.primary.hex}/>}
+          {props.name==='Menu' && <MaterialIcon name='dots-horizontal' size={24} color={icons.primary.hex}/>}
+         
+        
         </View>
       </TouchableOpacity>
     )
@@ -79,19 +67,16 @@ function Header({props}: {props: BottomTabHeaderProps}): React.JSX.Element {
   return (
     <View
       style={{
-        backgroundColor:
-          routeName === 'Map' ? 'rgba(255, 255, 255, 0)' : '',
-        position: routeName === 'Map' ? 'absolute' : 'relative',
         paddingTop: insets.top,
       }}
-      className="w-full flex-row items-center justify-between px-2">
+      className={`w-full flex-row items-center justify-between pb-2 px-2 ${routeName==='Map' ? 'absolute' : 'relative'} ${routeName==='Map' ? 'bg-transparent' : background.primary.tailwind}`}>
       <View className="flex-row">
         <HeaderIcon name='Profile'/>
         <HeaderIcon name='Search'/>
       </View>
       <Text
-        className="text-xl"
-        style={{color: routeName === 'Map' ? 'white' : 'black'}}>
+        className={`text-xl ${routeName === 'Map' ? 'text-white' : routeName === 'Guftgu' ? text.accent.tailwind : text.primary.tailwind} ${routeName === 'Guftgu' ? 'font-semibold' : ''}`}
+        >
         {routeName}
       </Text>
       <View className="flex-row">
@@ -99,6 +84,7 @@ function Header({props}: {props: BottomTabHeaderProps}): React.JSX.Element {
         <HeaderIcon name='Menu'/>
       </View>
         <AddFriendModal navigation={navigation} bottomModalRef={addFriendModalRef} snapPointsArr={['25%', '50%', '70%']} initialIndex={2}/>
+        <SearchChatModal navigation={navigation} bottomModalRef={searchChatModalRef} snapPointsArr={['25%', '50%', '70%']} initialIndex={2}/>
         <MenuModal navigation={navigation} addFriendModalRef={addFriendModalRef} bottomModalRef={menuModalRef} snapPointsArr={['25%']} initialIndex={0}/>
     </View>
   );
