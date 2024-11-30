@@ -11,8 +11,8 @@
     => sender will be called emitters and receivers would be called simple events
 */
 
-import { searchUserApiFn } from "../api/endpointFunctions";
-import { addFriendRequestToDB, updateFriendEntryInDB } from "../dbModel/db";
+import { fetchFriendsApiFn, fetchMessagesApiFn, searchUserApiFn } from "../api/endpointFunctions";
+import { addFriendRequestToDB, saveChatToDB, updateFriendEntryInDB, updateFriendListInDB } from "../dbModel/db";
 // import useUserStore from "../store/userStore"
 import { chatSocket } from "./socketConfig";
 
@@ -23,15 +23,40 @@ export interface socketEvent {
 
 export const connectionEvent: socketEvent = {
     name: 'connect',
-    handler(){
+    async handler(){
         console.log('Connected to chat server...🥳');
+        try {
+            const offlineMessages = await fetchMessagesApiFn();
+            console.log('Offline messages:', offlineMessages);
+            
+            if (offlineMessages?.length > 0) {
+                for (const message of offlineMessages) {
+                    await saveChatToDB(message.sender, message.receiver, message.message);
+                }
+                console.log('Offline messages saved to DB');
+            }
+
+            const friendList = await fetchFriendsApiFn();
+            console.log('Friend list:', friendList);
+            
+            if (friendList?.length > 0) {
+                await updateFriendListInDB(friendList);
+                console.log('Friend list updated in DB');
+            }
+
+        } catch (error) {
+            console.error('Offline data fetch failed:', {
+                error: error instanceof Error ? error.message : 'Unknown error',
+                stack: error instanceof Error ? error.stack : undefined
+            });
+        }
     }
 }
 
 export const connectionErrorEvent: socketEvent = {
     name: 'connect_error',
-    handler(){
-        console.log('Socket connection error...');
+    handler(err){
+        console.log('Socket connection error...', err);
     }
 }
 
@@ -48,8 +73,13 @@ export function chatPersonalEmit<T>(data: T){
 
 export const chatPersonalEvent: socketEvent = {
     name: 'chat:personal',
-    handler({message, fromUsername}: {message: string, fromUsername: string}){
+    async handler({message, fromUsername}: {message: string, fromUsername: string}){
         console.log(`Message from ${fromUsername}: ${message}`);
+        try {
+            await saveChatToDB(fromUsername, "me", message);
+        } catch (error) {
+            throw new Error('Failed to save chat to DB');
+        }
     }
 }
 
@@ -62,10 +92,17 @@ export const friendRequestReceivedEvent: socketEvent = {
     async handler({fromUsername}: {fromUsername: string}){
         console.log(`Friend Request from ${fromUsername}`);
         try {
-            const result = await searchUserApiFn(fromUsername);
-            addFriendRequestToDB(result.username, result.name, 1);
+            const userResult = await searchUserApiFn(fromUsername)
+            if(!userResult || !userResult.username || !userResult.name){
+                throw new Error('Invalid user data received');
+            }
+            await addFriendRequestToDB(userResult.username, userResult.name, '1');
+            console.log('Friend Request added to DB');
         } catch (error) {
-            console.log(error);
+            console.error('Friend request processing failed:', {
+                fromUsername,
+                error: error instanceof Error ? error.message : 'Unknown error'
+            });
         }
     }
 }
@@ -76,9 +113,9 @@ export function friendRequestAcceptEmit<T>(data: T){
 
 export const friendRequestAcceptedEvent: socketEvent = {
     name: 'friendRequest:accepted',
-    handler({fromUsername}: {fromUsername: string}){
+    async handler({fromUsername}: {fromUsername: string}){
         console.log(`Friend Request to ${fromUsername} accepted`);
-        updateFriendEntryInDB(fromUsername, 'accepted');
+        await updateFriendEntryInDB(fromUsername, 'accepted');
     }
 }
 
