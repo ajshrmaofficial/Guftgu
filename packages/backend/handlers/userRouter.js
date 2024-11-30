@@ -33,7 +33,7 @@ userRouter.get("/fetchUndeliveredMessages", tryCatch(async (req, res) => {
     if (!receiverUsername) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
 
     const undeliveredMessages = await messageModel.find({ receiver: receiverUsername }).lean();
-    if(undeliveredMessages.length === 0) return res.status(204).send("No undelivered messages found");
+    if(undeliveredMessages.length === 0) return res.status(200).send([]);
     await messageModel.deleteMany({ receiver: receiverUsername, _id: { $in: undeliveredMessages.map(message => message._id)} });
     res.status(200).send(undeliveredMessages);
 }));
@@ -48,10 +48,9 @@ userRouter.get("/fetchFriendList", tryCatch(async (req, res) => {
     const user = await userModel.findOne({ username: username }, { _id: 1 }).lean();
     if (!user) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
 
-
     const friendList = await friendshipModel.find({ $or: [{user1: user._id}, {user2: user._id}] })
         .populate('user1', 'username name -_id')
-        .populate('user2', 'username name -_id'); 
+        .populate('user2', 'username name -_id').lean(); 
     const formattedFriendList = friendList.map(friend => {
         if(friend.user1.username === username) return {username: friend.user2.username, name: friend.user2.name, status: friend.status, party: 2};
         else return {username: friend.user1.username, name: friend.user1.name, status: friend.status, party: 1};
@@ -66,19 +65,18 @@ userRouter.get("/searchUser", tryCatch(async (req, res) => {
     const currUsername = req.user.username;
     
     if (!username || !currUsername) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
-    // const user1 = await userModel.findOne({ username: currUsername });
-    // const user2 = await userModel.findOne({ username: username });
-    const [user1, user2] = await Promise.all([userModel.findOne({ username: currUsername }), userModel.findOne({ username: username })]);
+    
+    const [user1, user2] = await Promise.all([userModel.findOne({ username: currUsername }).lean(), userModel.findOne({ username: username }).lean()]);
     if (!user1 || !user2) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
 
     const friend = await friendshipModel.findOne({ $or: [{user1: user1._id, user2: user2._id}, {user1: user2._id, user2: user1._id}] })
-        .select('user1 user2 status').lean();
+        .populate('user1', 'username name').populate('user2', 'username name').lean();
     if (friend) {
         if(friend.user1.username === currUsername) {
-            const friendInfo = {username: friend.user2.username, name: friend.user2.name, status: friend.status, party: 2};
+            const friendInfo = {username: friend.user2.username, name: friend.user2.name, status: friend.status, party: 1};
             return res.status(200).send(friendInfo);
         } else {
-            const friendInfo = {username: friend.user1.username, name: friend.user1.name, status: friend.status, party: 1};
+            const friendInfo = {username: friend.user1.username, name: friend.user1.name, status: friend.status, party: 2};
             return res.status(200).send(friendInfo);
         }
     }
@@ -96,10 +94,9 @@ userRouter.post("/addFriend", tryCatch(async (req, res) => {
     if (!currUsername || !friendUsername) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
     if(currUsername === friendUsername) throw new AppError(INVALID_INPUT.errorCode, INVALID_INPUT.message, INVALID_INPUT.statusCode);
 
-    const user1 = await userModel.findOne({ username: currUsername });
-    const user2 = await userModel.findOne({ username: friendUsername });
+    const [user1, user2] = await Promise.all([userModel.findOne({ username: currUsername }).lean(), userModel.findOne({ username: friendUsername }).lean()]);
     if (!user1 || !user2) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
-
+    
     const friendship = new friendshipModel({ user1: user1._id, user2: user2._id });
     await friendship.save();
     res.status(200).send("Friend request sent successfully");
@@ -112,8 +109,8 @@ userRouter.post("/acceptFriendRequest", tryCatch(async (req, res) => {
     const currUsername = req.user.username;
     if (!currUsername || !friendUsername) throw new AppError(MISSING_FIELDS.errorCode, MISSING_FIELDS.message, MISSING_FIELDS.statusCode);
 
-    const user2 = await userModel.findOne({ username: currUsername });
-    const user1 = await userModel.findOne({ username: friendUsername });
+    const user2 = await userModel.findOne({ username: currUsername }).lean();
+    const user1 = await userModel.findOne({ username: friendUsername }).lean();
     if (!user1 || !user2) throw new AppError(USER_NOT_FOUND.errorCode, USER_NOT_FOUND.message, USER_NOT_FOUND.statusCode);
 
     const friendship = await friendshipModel.findOne({ user1: user1._id, user2: user2._id });
