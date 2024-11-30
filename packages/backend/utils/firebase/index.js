@@ -31,7 +31,7 @@ function initializeFirebase() {
           type: process.env.SERVICE_ACCOUNT_TYPE || 'service_account',
           project_id: process.env.SERVICE_ACCOUNT_PROJECT_ID,
           private_key_id: process.env.SERVICE_ACCOUNT_PRIVATE_KEY_ID,
-          private_key: process.env.SERVICE_ACCOUNT_PRIVATE_KEY.replace(/\\n/g, '\n'),
+          private_key: process.env.SERVICE_ACCOUNT_PRIVATE_KEY,
           client_email: process.env.SERVICE_ACCOUNT_CLIENT_EMAIL,
           client_id: process.env.SERVICE_ACCOUNT_CLIENT_ID,
           auth_uri: process.env.SERVICE_ACCOUNT_AUTH_URI || 'https://accounts.google.com/o/oauth2/auth',
