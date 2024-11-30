@@ -3,31 +3,29 @@ import { Text, TouchableOpacity, View} from 'react-native';
 import {
   connectChatSocket,
 } from '../utility/socket/socketConfig';
-// import {ReceiveEvent, useSocketReceiveEvents} from '../utility/socket/useSocketEvents';
 import { AppNavigationProps } from '../utility/navigation/NavigationStackTypes';
 import { FlashList } from '@shopify/flash-list';
-import { useTheme } from '@react-navigation/native';
-import useFetchUserData from '../utility/hooks/useFetch';
-import { connectionErrorEvent, connectionEvent, friendRequestAcceptedEvent, friendRequestReceivedEvent } from '../utility/socket/socketEvents';
+import { chatPersonalEvent, connectionErrorEvent, connectionEvent, friendRequestAcceptedEvent, friendRequestReceivedEvent } from '../utility/socket/socketEvents';
 import { useSocketEvents } from '../utility/socket/useSocketEvents';
-import { useNotifications } from '../utility/hooks/useNotification';
 import { getChatListFromDB } from '../utility/dbModel/db';
+import getThemeColors from '../utility/theme';
+import { useNotifications } from '../utility/hooks/useNotification';
 // import useLocation from '../utility/hooks/useLocation';
 
 interface ChatListItemType{
-  friendName: string; 
-  friendUsername: string;
+  name: string; 
+  username: string;
   lastMessage: string;
-  lastMessageTime: string;
+  updatedAt: string;
 }
 
 function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
   connectChatSocket();
-  useFetchUserData();
   // const [error, setError] = useState<string | null>('');
   // const {} = useLocation();
   const [ChatList, setChatList] = useState<ChatListItemType[]>([]);
-  const {colors} = useTheme();
+  const {text, background} = getThemeColors();
+  const {} = useNotifications();
 
   const chatListObserver = React.useMemo(
     () => getChatListFromDB().observe(),
@@ -52,34 +50,30 @@ function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
   // ];
 
   const trimMessage = (message: string) => {
+    // If message is greater than 40 characters, trim it
     if(message.length > 40){
       return message.slice(0, 40) + '...';
     }
     return message;
   }
 
-  // const events: ReceiveEvent[] = [
-  //   {
-  //     name: 'connect_error',
-  //     handler(err: any) {
-  //       setError('Connection Error...');
-  //     },
-  //   },
-  //   {
-  //     name: 'connect',
-  //     handler() {
-  //       setError(null);
-  //       console.log('Connected to chat server...🥳');
-  //     },
-  //   },
+  const trimDate = (date: any) => {
+    // If date is today, return time, else return date
+    if(date.toDateString() === new Date().toDateString()){
+      return date.toLocaleTimeString();
+    } else {
+      return date.toLocaleDateString();
+    }
+  }
+
+  // Keeping location event for future use
   //   {
   //     name: 'location',
   //     handler({location, fromUsername}) {
   //       // setState(setFriendLocations({location, fromUsername}));
   //     },
   //   },
-  // ];
-  useSocketEvents([connectionEvent, connectionErrorEvent, friendRequestAcceptedEvent, friendRequestReceivedEvent]);
+  useSocketEvents([connectionEvent, connectionErrorEvent, friendRequestAcceptedEvent, friendRequestReceivedEvent, chatPersonalEvent]);
 
   const openChat = (friendUsername: string, friendName: string) => {
     navigation.navigate("ChatScreen", {username: friendUsername, name: friendName});
@@ -87,20 +81,10 @@ function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
 
 
   function EmptyChatComponent(): React.JSX.Element {
-    const {sendLocalNotification} = useNotifications();
-    const displayNotification = () => {
-      sendLocalNotification({
-        title: 'New Chat',
-        body: 'Start a new chat with your friend',
-        data: {type: 'chat'},
-      });
-    }
-
-
     return (
       <View className='min-h-screen items-center justify-center'>
         <Text className='text-black font-semibold text-base'>Looking very empty...</Text>
-        <TouchableOpacity onPress={displayNotification}>
+        <TouchableOpacity>
           <Text className='text-blue-700 font-semibold'>
             Start a new chat
           </Text>
@@ -110,25 +94,25 @@ function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
   } 
 
   return (
-    <View className='h-full w-full mt-4'>
+    <View className='flex-1 bg-gray-50'>
       <View className='flex-row gap-2 ml-2'>
         {['All', 'Favourites'].map((item, index) => (
-          <TouchableOpacity key={index} style={{backgroundColor: colors.primary}} className='p-2 rounded-2xl'>
-            <Text style={{color: colors.border}} className='font-semibold'>{item}</Text>
+          <TouchableOpacity key={index} className={`p-2 rounded-2xl ${background.card.tailwind}`}>
+            <Text className={`${text.secondary.tailwind} font-semibold`}>{item}</Text>
           </TouchableOpacity>
         ))}
       </View>
-      <FlashList data={ChatList} estimatedItemSize={70} ListEmptyComponent={EmptyChatComponent} renderItem={({item})=>(
-        <TouchableOpacity onPress={()=>openChat(item.friendUsername, item.friendName)} className='w-full items-center mb-4'>
+      <FlashList contentContainerStyle={{paddingTop: 16}} data={ChatList} estimatedItemSize={70} ListEmptyComponent={EmptyChatComponent} renderItem={({item})=>(
+        <TouchableOpacity onPress={()=>openChat(item.username, item.name)} className='w-full items-center mb-4'>
           <View className='w-11/12 flex-row'>
             <View className='h-12 w-12 border rounded-full mr-2'/>
             <View className='flex-grow'>
               <View className='flex-row justify-between'>
-                <Text className='text-black text-base'>{item.friendName}</Text>
-                <Text className='text-gray-400 text-xs font-medium'>{item.lastMessageTime}</Text>
+                <Text className={`text-base ${text.primary.tailwind}`}>{item.name}</Text>
+                <Text className={`${text.secondary.tailwind} text-xs font-medium`}>{trimDate(item.updatedAt)}</Text>
               </View>
               <View>
-                <Text className='text-gray-400 text-sm font-medium'>{trimMessage(item.lastMessage)}</Text>
+                <Text className={`${text.secondary.tailwind} text-sm font-medium`}>{trimMessage(item.lastMessage)}</Text>
               </View>
             </View>
           </View>
