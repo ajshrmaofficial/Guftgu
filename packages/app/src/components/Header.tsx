@@ -1,6 +1,6 @@
 import {BottomTabHeaderProps} from '@react-navigation/bottom-tabs';
 import React, { useEffect, useRef, useState } from 'react';
-import {Alert, Platform, Text, ToastAndroid, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import NetInfo from '@react-native-community/netinfo';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -10,7 +10,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import getThemeColors from '../utility/theme';
 import SearchChatModal from './SearchChatModal';
-// import Avatar from "react-native-avataaars";
 
 function Header({props}: {props: BottomTabHeaderProps}): React.JSX.Element {
   const {background, text, icons} = getThemeColors();
