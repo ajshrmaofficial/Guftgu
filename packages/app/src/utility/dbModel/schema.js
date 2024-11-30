@@ -9,7 +9,7 @@ const userSchema = appSchema({
                 {name: 'username', type: 'string', isIndexed: true},
                 {name: 'name', type: 'string'},
                 {name: 'status', type: 'string'},
-                {name: 'party', type: 'number'}
+                {name: 'party', type: 'string'}
             ]
         }),
         tableSchema({
