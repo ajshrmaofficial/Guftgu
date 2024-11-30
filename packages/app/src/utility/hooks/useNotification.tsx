@@ -1,135 +1,192 @@
 import { useState, useEffect, useCallback } from 'react';
-import notifee, { EventType, AndroidImportance, AuthorizationStatus, AndroidStyle } from '@notifee/react-native';
+import notifee, {
+  AndroidImportance, 
+  AuthorizationStatus, 
+  AndroidStyle,
+  AndroidCategory,
+} from '@notifee/react-native';
 import messaging from '@react-native-firebase/messaging';
 import { Platform, PermissionsAndroid } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface Notification {
-  id: string;
-  title: string;
-  body: string;
-  data?: any;
+// Types
+interface NotificationData {
+  screen: 'Guftgu' | 'Mehfil' | 'None';
+  type: any;
+  message: string;
+  fromUsername: string;
+  toUsername: string;
+  isGroupMessage?: string;
+  [key: string]: string | undefined;  // Add index signature
 }
 
-export const useNotifications = () => {
-  const [notification, setNotification] = useState<Notification | null>(null);
-  const [initialNotification, setInitialNotification] = useState<Notification | null>(null);
-  const [permission, setPermission] = useState<boolean>(false);
-
-  const requestPermission = useCallback(async () => {
-    if (Platform.OS === 'ios') {
-      const settings = await notifee.requestPermission();
-      setPermission(settings.authorizationStatus >= AuthorizationStatus.AUTHORIZED);
-      return settings.authorizationStatus >= AuthorizationStatus.AUTHORIZED;
-    } else if (Platform.OS === 'android') {
-        const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-        setPermission(result === PermissionsAndroid.RESULTS.GRANTED);
-        return result === PermissionsAndroid.RESULTS.GRANTED;
+// Standalone notification function
+export const sendLocalNotification = async (notification: any) => {
+  try {
+    const channelId = notification.notification.android.channelId === 'chat' ? 'chat' : 'default';
+    const isGroup = notification.data.isGroupMessage === 'true';
+    
+    let title: string;
+    if(isGroup) title = 'Group Message';
+    else if(notification.data.screen === 'Guftgu'){
+      if(notification.data.type === 'chat') title = `Message from ${notification.data.fromUsername} 👀`;
+      else title = 'New Guftgu Message';
     }
-    return false;
-  }, []);
+    else if(notification.data.screen === 'Mehfil'){
+      if(notification.data.type === 'chat') title = `Someone messaged in Mehfil 🤗`;
+      else title = 'New Mehfil Message';
+    } else {
+      if(notification.data.type === 'misc') title = 'Hey there 👋';
+      else title = 'New Notification';
+    }
 
-  const createDefaultChannel = useCallback(async () => {
+    await notifee.displayNotification({
+      title,
+      body: notification.data.message,
+      data: notification.data as { [key: string]: string },  // Type assertion here
+      android: {
+        channelId,
+        smallIcon: 'ic_stat_name',
+        category: notification.data.type === 'chat' ? AndroidCategory.MESSAGE : AndroidCategory.SOCIAL,
+        pressAction: {
+          id: 'default',
+          launchActivity: 'default',
+        },
+        style: { type: AndroidStyle.BIGTEXT, text: "notif.data.message" },
+      },
+    });
+  } catch (error) {
+    console.error('Error sending local notification:', error);
+  }
+};
+
+// Notification channels setup
+const setupNotificationChannels = async () => {
+  try {
     await notifee.createChannel({
       id: 'default',
       name: 'Default Channel',
       importance: AndroidImportance.HIGH,
+      sound: 'default',
     });
-  }, []);
 
-  const setupNotifications = useCallback(async () => {
-    await createDefaultChannel();
+    await notifee.createChannel({
+      id: 'chat',
+      name: 'Chat Notifications',
+      importance: AndroidImportance.HIGH,
+      sound: 'default',
+    });
+  } catch (error) {
+    console.error('Error creating notification channels:', error);
+  }
+};
 
-    // Set up foreground handler
-    return notifee.onForegroundEvent(({ type, detail }) => {
-      switch (type) {
-        case EventType.DELIVERED:
-          setNotification({
-            id: detail.notification?.id || '',
-            title: detail.notification?.title || '',
-            body: detail.notification?.body || '',
-            data: detail.notification?.data,
-          });
-          break;
-        case EventType.PRESS:
-          console.log('User pressed notification', detail.notification);
-          // Handle notification press here
-          break;
+// Notification initialization function
+export const initializeNotifications = async () => {
+  try {
+    // Request permissions first
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+    if (!enabled) {
+      console.log('User notification permissions rejected');
+      return false;
+    }
+
+    // Register for background messages
+    messaging().setBackgroundMessageHandler(async remoteMessage => {
+      console.log('Background message:', remoteMessage);
+      if (!remoteMessage.data) return;
+      sendLocalNotification(remoteMessage);
+    });
+
+    await setupNotificationChannels();
+    return true;
+  } catch (error) {
+    console.error('Failed to initialize notifications:', error);
+    return false;
+  }
+};
+
+export const useNotifications = () => {
+  const [permission, setPermission] = useState<boolean>(false);
+
+  const requestPermission = useCallback(async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        const permissionStatus = await notifee.requestPermission();
+        const isGranted = permissionStatus.authorizationStatus >= AuthorizationStatus.AUTHORIZED;
+        setPermission(isGranted);
+        return isGranted;
       }
-    });
-  }, [createDefaultChannel]);
-
-  const checkInitialNotification = useCallback(async () => {
-    // Check if app was opened by a notification
-    const initialNotif = await notifee.getInitialNotification();
-    if (initialNotif && initialNotif.notification.id) {
-      setInitialNotification({
-        id: initialNotif.notification.id,
-        title: initialNotif.notification.title || '',
-        body: initialNotif.notification.body || '',
-        data: initialNotif.notification.data,
-      });
+      
+      if (Platform.OS === 'android') {
+        const permissionStatus = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
+        const isGranted = permissionStatus === PermissionsAndroid.RESULTS.GRANTED;
+        setPermission(isGranted);
+        return isGranted;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      return false;
     }
   }, []);
 
-  useEffect(() => {
-    const setup = async () => {
-      const hasPermission = await requestPermission();
-      if (hasPermission) {
-        await checkInitialNotification();
-        const unsubscribeForeground = await setupNotifications();
+  const handleForegroundEvent = useCallback((event: any) => {
+    console.log('Foreground notifee event:', event);
+    if (!event.notification) return;
+    
+  }, []);
 
-        // Firebase message handling for when the app is in the foreground
-        const unsubscribeMessage = messaging().onMessage(async remoteMessage => {
-          await notifee.displayNotification({
-            title: remoteMessage.notification?.title,
-            body: remoteMessage.notification?.body,
-            data: remoteMessage.data,
-            android: {
-              channelId: 'default',
-              smallIcon: 'guftgu',
-            },
-          });
+  useEffect(() => {
+    let unsubscribeForeground: () => void;
+    let unsubscribeMessage: () => void;
+
+    const setup = async () => {
+      try {
+        const hasPermission = await requestPermission();
+        if (!hasPermission) {
+          console.log('No notification permission');
+          return;
+        }
+
+        // Token refresh handler
+        messaging().onTokenRefresh(async (token) => {
+          console.log('New FCM token:', token);
+          await AsyncStorage.setItem('fcmToken', token);
+          // Send new token to your backend here
         });
 
-        return () => {
-          unsubscribeForeground();
-          unsubscribeMessage();
-        };
+        // Foreground message handler with improved logging
+        unsubscribeMessage = messaging().onMessage(async remoteMessage => {
+          console.log('Received foreground message:', JSON.stringify(remoteMessage));
+          if (!remoteMessage.data) return;
+          sendLocalNotification(remoteMessage);
+        });
+        
+        // Foreground notification handler
+        // unsubscribeForeground = notifee.onForegroundEvent(handleForegroundEvent);
+        
+      } catch (error) {
+        console.error('Error in notification setup:', error);
       }
     };
 
     setup();
-  }, [requestPermission, setupNotifications, checkInitialNotification]);
 
-  const sendLocalNotification = useCallback(async (notif: Omit<Notification, 'id'>) => {
-    if (permission) {
-      try {
-        await notifee.displayNotification({
-            title: notif.title,
-            body: notif.body,
-            data: notif.data,
-            android: {
-              channelId: 'default',
-              smallIcon: 'ic-stat-name', // used for app icon that will be shown in notification
-                                        // another thing is largeIcon which is for showing secondary things like user profile picture in a chat scenario inside the notification
-              pressAction: {
-                id: 'default',
-              },
-              style: { type: AndroidStyle.BIGTEXT, text: notif.body },
-            },
-          });
-      } catch (error) {
-        console.error('Error sending local notification:', error);
-      }
-    } else {
-      console.log('Notification permission not granted');
-    }
-  }, [permission]);
+    return () => {
+      unsubscribeForeground?.();
+      unsubscribeMessage?.();
+    };
+  }, [requestPermission, handleForegroundEvent]);
 
   return {
-    notification,
-    initialNotification,
-    sendLocalNotification,
     hasPermission: permission,
     requestPermission,
   };
