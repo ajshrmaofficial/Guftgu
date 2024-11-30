@@ -54,8 +54,7 @@ function Header({props}: {props: BottomTabHeaderProps}): React.JSX.Element {
       <TouchableOpacity onPress={onPressFn}>
         <View
           className={`rounded-full h-26 p-2 mx-2 ${background.card.tailwind}`}>
-          {/* {props.name!=='Menu' && <Icon name={props.name==='Profile' ? 'person' : props.name==='Search' ? 'search' : props.name==='AddFriend' ? 'person-add' : ''} size={24} color={icons.primary.hex}/>} */}
-          {(props.name!=='Menu' && props.name!='Profile') && <Icon name={props.name==='Search' ? 'search' : props.name==='AddFriend' ? 'person-add' : ''} size={24} color={icons.primary.hex}/>}
+          {props.name!=='Menu' && <Icon name={props.name==='Profile' ? 'person' : props.name==='Search' ? 'search' : props.name==='AddFriend' ? 'person-add' : ''} size={24} color={icons.primary.hex}/>}
           {props.name==='Menu' && <MaterialIcon name='dots-horizontal' size={24} color={icons.primary.hex}/>}
          
         
