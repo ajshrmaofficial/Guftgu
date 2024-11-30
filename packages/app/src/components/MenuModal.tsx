@@ -1,12 +1,10 @@
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
-import {useTheme} from '@react-navigation/native';
 import {Text, TouchableOpacity, View} from 'react-native';
 import { withBottomSheet } from './utility/BottomSheet';
 export type Ref = BottomSheetModal;
 
 function MenuModalComponent({addFriendModalRef, bottomModalRef, navigation}: {addFriendModalRef?: React.RefObject<BottomSheetModal>, bottomModalRef: React.RefObject<BottomSheetModal>, navigation?: any}) {
   const menuItems = ['New Chat', 'Friends', 'Settings'];
-  const {colors} = useTheme();
   const openAddFriendModal = () => {
     if(addFriendModalRef && bottomModalRef){
       addFriendModalRef.current?.present();
@@ -24,8 +22,7 @@ function MenuModalComponent({addFriendModalRef, bottomModalRef, navigation}: {ad
           <TouchableOpacity
             key={index}
             onPress={items === 'Friends' || items === 'New Chat' ? openAddFriendModal : navigateToSettings}
-            className="w-full p-3 items-center"
-            style={{borderBottomColor: colors.border}}>
+            className="w-full p-3 items-center">
             <Text className="text-black text-lg font-medium">{items}</Text>
           </TouchableOpacity>
         ))}
