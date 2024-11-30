@@ -1,7 +1,7 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import userSchema from './schema';
-import {FriendModel, MessageModel} from './dbModel';
+import {ChatListModel, FriendModel, MessageModel} from './dbModel';
 
 const adapter = new SQLiteAdapter({
   dbName: 'UserData ',
@@ -12,7 +12,7 @@ const adapter = new SQLiteAdapter({
 
 const database = new Database({
   adapter,
-  modelClasses: [FriendModel, MessageModel],
+  modelClasses: [FriendModel, MessageModel, ChatListModel],
 });
 
 const saveChatToDB = async (senderUsername, receiverUsername, messageText) => {
@@ -37,6 +37,15 @@ const getChatsFromDB = (otherUsername, page, pageSize) => {
   )
 }
 
+const searchChatsFromDB = (searchText) => {
+  return database.collections.get('messages')
+  .query(
+    Q.unsafeSqlQuery(
+      `SELECT * FROM messages WHERE message LIKE ? ORDER BY created_at DESC`, [`%${searchText}%`]
+    )
+  ).fetch();
+}
+
 const getFriendListFromDB = () => {
   return database.collections.get('friends')
   .query(
@@ -44,61 +53,63 @@ const getFriendListFromDB = () => {
   )
 }
 
-const updateFriendList = async (newFriendList) => {
+const updateFriendListInDB = async (newFriendList) => {
   const friendCollection = database.collections.get('friends');
 
   try {
-    // Get all existing friends in one query
     const existingFriends = await friendCollection
       .query(Q.where('status', Q.notEq('blocked')))
       .fetch();
     
-    // Create a map of existing friends for O(1) lookup
     const existingFriendsMap = new Map(
       existingFriends.map(friend => [friend.username, friend])
     );
 
-    // Prepare batch operations
     const friendsToUpdate = [];
     const friendsToCreate = [];
 
-    // Categorize operations
+    // Match backend response structure
     newFriendList.forEach(friend => {
+      // Backend sends: { username, name, status, party }
       const existing = existingFriendsMap.get(friend.username);
       if (existing) {
         friendsToUpdate.push({
           existing,
-          newData: friend
+          newData: {
+            username: friend.username,
+            name: friend.name,
+            status: friend.status,
+            party: friend.party.toString() // Convert to string for consistency
+          }
         });
       } else {
-        friendsToCreate.push(friend);
+        friendsToCreate.push({
+          username: friend.username,
+          name: friend.name,
+          status: friend.status,
+          party: friend.party.toString()
+        });
       }
     });
 
-    // Perform batch operations
     await database.write(async () => {
-      // Batch updates
-      await Promise.all(
-        friendsToUpdate.map(({existing, newData}) =>
+      await Promise.all([
+        ...friendsToUpdate.map(({existing, newData}) =>
           existing.update(friend => {
             friend.name = newData.name;
             friend.status = newData.status;
             friend.party = newData.party;
           })
-        )
-      );
-
-      // Batch creates
-      await Promise.all(
-        friendsToCreate.map(friend =>
-          friendCollection.create(newFriend => {
-            newFriend.username = friend.username;
-            newFriend.name = friend.name;
-            newFriend.status = friend.status;
-            newFriend.party = friend.party;
+        ),
+        ...friendsToCreate.map(newData =>
+          friendCollection.create(friend => {
+            friend.username = newData.username;
+            friend.name = newData.name;
+            friend.status = newData.status;
+            friend.party = newData.party;
           })
         )
-      );
+      ]);
     });
   } catch (error) {
     console.error('Error updating friend list:', error);
@@ -106,9 +117,8 @@ const updateFriendList = async (newFriendList) => {
   }
 }
 
-const addFriendRequestToDB = async (friendUsername, friendName, party) => {
+const addFriendRequestToDB = async (friendUsername, friendName, party='2') => {
   const friendCollection = database.collections.get('friends');
-  party = party || 2;
 
   await database.write(async () => {
     await friendCollection
@@ -116,7 +126,7 @@ const addFriendRequestToDB = async (friendUsername, friendName, party) => {
         friend.username = friendUsername;
         friend.name = friendName;
         friend.status = 'pending';
-        friend.party = 2;
+        friend.party = party.toString();
       });
   });
 }
@@ -147,22 +157,34 @@ const getChatListFromDB = () => {
 
 const updateChatEntryInDB = async (username, name, lastMessage) => {
   const chatCollection = database.collections.get('chatList');
-
+  console.log('Updating chat entry:', username, name, lastMessage);
   await database.write(async () => {
-    const chat = await chatCollection.query(Q.where('username', username)).fetch();
-    if (chat.length !== 1) {
-      await chatCollection.create(chat => {
-        chat.username = username;
-        chat.name = name;
-        chat.lastMessage = lastMessage;
-      });
-    } else {
-      await chat[0].update(chat => {
-        chat.name = name;
-        chat.lastMessage = lastMessage;
-      });
+    try {
+      // Try to find existing chat
+      const existingChat = await chatCollection
+        .query(Q.where('username', username))
+        .fetch();
+
+      if (existingChat[0]) {
+        // Update existing chat
+        await existingChat[0].update(chat => {
+          chat.name = name;
+          chat.username = username;
+          chat.lastMessage = lastMessage;
+        });
+      } else {
+        // Create new chat entry
+        await chatCollection.create(chat => {
+          chat.username = username;
+          chat.name = name;
+          chat.lastMessage = lastMessage || '';
+        });
+      }
+    } catch (error) {
+      console.error('Error updating chat entry:', error);
+      throw error;
     }
   });
 }
 
-export {saveChatToDB, getChatsFromDB, getFriendListFromDB, updateFriendList, addFriendRequestToDB, updateFriendEntryInDB, getChatListFromDB, updateChatEntryInDB};
+export {saveChatToDB, getChatsFromDB, getFriendListFromDB, updateFriendListInDB, addFriendRequestToDB, updateFriendEntryInDB, getChatListFromDB, updateChatEntryInDB, searchChatsFromDB};
