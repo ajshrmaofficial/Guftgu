@@ -1,63 +1,121 @@
-// const { userModel } = require("../schema");
-const { messageModel } = require("../schema");
-// const { firebase } = require("../utils");
+const { userModel, messageModel } = require("../schema");
 const socketAuth = require("./socketAuth");
+const firebase = require("../utils/firebase")
+
+// Cache FCM tokens to reduce DB queries
+const tokenCache = new Map();
+const CACHE_EXPIRY = 1000 * 60 * 30; // 30 minutes
+
+// Notification queue for batching
+const notificationQueue = new Map();
+let notificationTimeout = null;
+const NOTIFICATION_BATCH_DELAY = 1000; // 1 second
+const MAX_BATCH_SIZE = 500;
 
 const onlineUsers = new Set();
 
-// const sendNotification = async (
-//   messageBody,
-//   screen,
-//   toUsername,
-//   myUsername
-// ) => {
-//   if (screen === "Mehfil") {
-//     //   const users = await userModel.find();
-//     const users = await userModel.find({ fcmToken: { $exists: true } });
-//     const tokens = users.map((user) => user.fcmToken);
-//     const message = {
-//       // notification: {
-//       //   title: 'New message in Mehfil',
-//       //   body: messageBody
-//       // },
-//       data: {
-//         screen: screen,
-//         message: messageBody,
-//       },
-//     };
-//     const messages = tokens.map((token) => ({
-//       ...message,
-//       token: token,
-//     }));
-//     const response = await firebase
-//       .messaging()
-//       .sendEachForMulticast({ messages });
-//     console.log(`${response.successCount} messages were sent successfully`);
-//     console.log(`${response.failureCount} messages failed to send`);
-//   } else if (screen === "Guftgu") {
-//     const findUser = await userModel.findOne({ username: toUsername });
-//     if (findUser && findUser.fcmToken) {
-//       console.log("sending fcm notification to ", toUsername);
-//       const messageData = {
-//         token: findUser.fcmToken,
-//         data: {
-//           screen: screen,
-//           message: messageBody,
-//           fromUsername: myUsername,
-//         },
-//       };
-//       firebase
-//         .messaging()
-//         .send(messageData)
-//         .then((response) => {
-//           console.log("Successfully sent message:", response);
-//         })
-//         .catch((error) => {
-//           console.log("Error sending message:", error);
-//         });
-//     }
-//   }
-// };
+const getFCMToken = async (username) => {
+  const cached = tokenCache.get(username);
+  if (cached && cached.timestamp > Date.now() - CACHE_EXPIRY) {
+    return cached.token;
+  }
+
+  const user = await userModel.findOne({ username }, { fcmToken: 1 });
+  if (user?.fcmToken) {
+    console.log('setting token in cache', username, user.fcmToken);
+    tokenCache.set(username, { token: user.fcmToken, timestamp: Date.now() });
+    return user.fcmToken;
+  }
+  return null;
+};
+
+const processBatchNotifications = async () => {
+  const messages = Array.from(notificationQueue.values());
+  notificationQueue.clear();
+  notificationTimeout = null;
+
+  if(messages.length === 0) return;
+
+  const chunks = [];
+  for (let i = 0; i < messages.length; i += MAX_BATCH_SIZE) {
+    chunks.push(messages.slice(i, i + MAX_BATCH_SIZE));
+  }
+
+  try {
+    for (const chunk of chunks) {
+      await Promise.all(
+        chunk.map(async (msg) => {
+          try {
+            await firebase.messaging().send(msg);
+            console.log(`Notification sent to ${msg.token}`);
+          } catch (error) {
+            console.error(`Failed to send notification: ${error.message}`, {
+              token: msg.token,
+              error
+            });
+            
+            // Handle invalid tokens
+            if (error.code === 'messaging/invalid-registration-token') {
+              const username = msg.data.toUsername;
+              await userModel.updateOne(
+                { username },
+                { $unset: { fcmToken: "" } }
+              );
+              tokenCache.delete(username);
+            }
+          }
+        })
+      );
+    }
+  } catch (error) {
+    console.error('Batch processing error:', error);
+  }
+};
+
+const queueNotification = async (data, toUsername, fromUsername, isGroupMessage = false) => {
+  if (!toUsername || !fromUsername) {
+    console.error('Missing username parameters');
+    return;
+  }
+  const userToken = await getFCMToken(toUsername);
+  if (!userToken) {
+    console.log(`No valid FCM token for ${toUsername}`);
+    return;
+  }
+
+  const notificationData = {
+    token: userToken,
+    notification: {
+      title: isGroupMessage ? 'Group Message' : `Message from ${fromUsername}`,
+      body: data.message,
+    },
+    // Move data to data field
+    data: {
+      screen: data.screen || 'None',
+      type: data.type || 'misc',
+      message: data.message,
+      fromUsername,
+      toUsername,
+      isGroupMessage: isGroupMessage.toString(),
+      timestamp: Date.now().toString(),
+    },
+    // Add Android specific config
+    android: {
+      priority: 'high',
+      notification: {
+        channelId: data.type === 'chat' ? 'chat' : 'default',
+      },
+    },
+  };
+
+  const queueKey = `${toUsername}-${Date.now()}`;
+  notificationQueue.set(queueKey, notificationData);
+  console.log(`Notification queued for ${toUsername} from ${fromUsername}`);
+
+  if (!notificationTimeout) {
+    notificationTimeout = setTimeout(processBatchNotifications, NOTIFICATION_BATCH_DELAY);
+  }
+};
 
 function registerEventHandlers(socket, chatNamespace) {
   const socketDisconnected = () => {
@@ -76,68 +134,87 @@ function registerEventHandlers(socket, chatNamespace) {
     }
   };
 
-  const groupChatMessageReceived = (message) => {
+  const groupChatMessageReceived = async (message) => {
     console.log(`Received message from ${socket.username}: `, message);
-    //   sendNotification(message, 'Mehfil', '', myUsername); //TODO: Have to fix notifications at frontend...
     socket.broadcast.emit("chat:group", {
       message,
       fromID: socket.id,
       fromUsername: socket.username,
     });
+
+    // Batch notifications for offline users
+    const offlineUsers = await userModel.find(
+      { username: { $nin: Array.from(onlineUsers), $ne: socket.username } },
+      { username: 1 }
+    );
+
+    offlineUsers.forEach(user => {
+      queueNotification({
+        screen: 'Mehfil',
+        type: 'chat',
+        message,
+      }, user.username, socket.username, true);
+    });
   };
 
-  const personalChatMessageReceived = async (messageData, callback) => {
-    const { message, toUsername } = messageData;
-
-    console.log(
-      `Recieved chat:personal from ${socket.username} to ${toUsername}: `,
-      message
-    );
-    //   sendNotification(message, 'Guftgu', toUsername, myUsername); //TODO: Have to fix notifications at frontend...
+  const personalChatMessageReceived = async ({ message, toUsername }) => {
     if (onlineUsers.has(toUsername)) {
       chatNamespace
         .to(toUsername)
         .emit("chat:personal", { message, fromUsername: socket.username });
-      callback({
-        status: "received",
-      });
     } else {
-      const msg = new messageModel({
+      const newMessage = await messageModel.create({
         sender: socket.username,
         receiver: toUsername,
         message,
       });
-      await msg.save({w: 0});
+      newMessage.save();
     }
+
+    await queueNotification({
+      screen: 'Guftgu',
+      type: 'chat',
+      message,
+    }, toUsername, socket.username)
   };
 
   const receivedSocketLocation = (location) => {
-    console.log(`Location recieved from ${socket.username}: `, location);
+    console.log(`Location received from ${socket.username}: `, location);
     socket.broadcast.emit("location", {
       location,
       fromUsername: socket.username,
     });
   };
 
-  const friendRequestReceived = (friendRequest) => {
+  const friendRequestReceived = async (friendRequest) => {
     const { friendUsername } = friendRequest;
     console.log(
       `Friend request received from ${socket.username} to ${friendUsername}`
     );
-    chatNamespace.to(friendRequest).emit("friendRequest:received", {
+    
+    chatNamespace.to(friendUsername).emit("friendRequest:received", {
       fromUsername: socket.username,
     });
+
+    await queueNotification({
+      message: `${socket.username} sent you a friend request`,
+    }, friendUsername, socket.username);
   };
 
-  const friendRequestAccepted = (friendRequest) => {
+  const friendRequestAccepted = async (friendRequest) => {
     const { friendUsername } = friendRequest;
     console.log(
       `Friend request accepted from ${socket.username} to ${friendUsername}`
     );
-    chatNamespace.to(friendRequest).emit("friendRequest:accepted", {
+    
+    chatNamespace.to(friendUsername).emit("friendRequest:accepted", {
       fromUsername: socket.username,
     });
-  }
+
+    await queueNotification({
+      message: `${socket.username} accepted your friend request`,
+    }, friendUsername, socket.username);
+  };
 
   return {
     socketDisconnected,
