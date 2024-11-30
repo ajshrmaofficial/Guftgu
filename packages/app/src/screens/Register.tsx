@@ -1,173 +1,175 @@
-import React, {useState} from 'react';
-import {Text, TextInput, TouchableOpacity, View} from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuthFunctions } from '../utility/definitionStore';
-import {AuthStackProps} from '../utility/navigation/NavigationStackTypes';
+import { AuthStackProps } from '../utility/navigation/NavigationStackTypes';
 import Loader from '../components/utility/Loader';
-import { useTheme } from '@react-navigation/native';
+import getThemeColors from '../utility/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-interface RegisterFormData {
-  username: string
-  name: string
-  password: string
-  confirmPassword: string
-  error: string
+interface FormData {
+  username: string;
+  name: string;
+  password: string;
+  confirmPassword: string;
 }
 
-interface ValidationFields{
-  hasLowerCase: boolean
-  hasUpperCase: boolean
-  hasNumber: boolean
-  hasSpecialChar: boolean
-  isUsernameValid: boolean
-  isNameValid: boolean
-}
+const useForm = (initialState: FormData) => {
+  const [values, setValues] = useState(initialState);
+  const [errors, setErrors] = useState<string>('');
+  const [isValid, setIsValid] = useState({
+    password: false,
+    username: false,
+    name: false,
+  });
 
-function Register({navigation}: AuthStackProps<"Register">): React.JSX.Element {
-  const {register} = useAuthFunctions();
-  const {colors} = useTheme();
-  const [registerFormData, setRegisterFormData] = useState<RegisterFormData>({
+  const handleChange = useCallback((field: keyof FormData, value: string) => {
+    setValues(prev => ({ ...prev, [field]: value }));
+    validateField(field, value);
+  }, []);
+
+  const validateField = useCallback((field: keyof FormData, value: string) => {
+    const validations = {
+      password: () => {
+        const hasLower = /[a-z]/.test(value);
+        const hasUpper = /[A-Z]/.test(value);
+        const hasNumber = /\d/.test(value);
+        const hasSpecial = /[!@#$%^&*()_+]/.test(value);
+        return hasLower && hasUpper && hasNumber && hasSpecial;
+      },
+      username: () => /^[a-z0-9._-]{3,}$/.test(value),
+      name: () => /^[a-zA-Z-' ]*[a-zA-Z-' ][a-zA-Z-' ]*$/.test(value) && value.length <= 20,
+    };
+
+    if (field in validations) {
+      setIsValid(prev => ({
+        ...prev,
+        [field]: validations[field as keyof typeof validations](),
+      }));
+    }
+  }, []);
+
+  return {
+    values,
+    errors,
+    isValid,
+    handleChange,
+    setErrors,
+  };
+};
+
+function Register({ navigation }: AuthStackProps<"Register">): React.JSX.Element {
+  const { register } = useAuthFunctions();
+  const {text} = getThemeColors();
+  const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
+
+  const {
+    values,
+    errors,
+    isValid,
+    handleChange,
+    setErrors,
+  } = useForm({
     username: '',
     name: '',
     password: '',
     confirmPassword: '',
-    error: ''
   });
-  const {username, name, password, confirmPassword, error} = registerFormData;
-  const [validationFields, setValidationFields] = useState<ValidationFields>({
-    hasLowerCase: false,
-    hasUpperCase: false,
-    hasNumber: false,
-    hasSpecialChar: false,
-    isUsernameValid: false,
-    isNameValid: false
-  })
-  const {hasLowerCase, hasUpperCase, hasNumber, hasSpecialChar, isUsernameValid, isNameValid} = validationFields;
-  const [loading, setLoading] = useState<boolean>(false);
 
-  const validatePassword = (text: string): void => {
-    setRegisterFormData({...registerFormData, password: text});
-    setValidationFields({...validationFields, 
-      hasLowerCase: /[a-z]/.test(text),
-      hasUpperCase: /[A-Z]/.test(text),
-      hasNumber: /\d/.test(text),
-      hasSpecialChar: /[!@#$%^&*()_+]/.test(text)
-    });
-  }
+  const handleSubmit = useCallback(async () => {
+    const { username, name, password, confirmPassword } = values;
 
-  const validateUsername = (text: string): void => {
-    setRegisterFormData({...registerFormData, username: text});
-    setValidationFields({...validationFields, isUsernameValid: /^[a-z0-9._-]{3,}$/.test(text)});
-  }
-
-  const validateName = (text: string): void => {
-    setRegisterFormData({...registerFormData, name: text});
-    setValidationFields({...validationFields, isNameValid: /^[a-zA-Z-' ]*[a-zA-Z-' ][a-zA-Z-' ]*$/.test(text)});
-  }
-
-  const comparePasswords = (text: string): void => {
-    if(text!==password){
-      setRegisterFormData({...registerFormData, error: "Passwords do not match"});
-    }
-    setRegisterFormData({...registerFormData, confirmPassword: text});
-  }
-
-  const submitCredentials = async() => {
-    if(!name || !username || !password || !confirmPassword){
-      setRegisterFormData({...registerFormData, error: "Enter all details"});
+    if (!username || !name || !password || !confirmPassword) {
+      setErrors('Enter all details');
       return;
     }
-    if(!hasLowerCase || !hasUpperCase || !hasNumber || !hasSpecialChar){
-      setRegisterFormData({...registerFormData, error: "Enter valid password"});
+
+    if (!isValid.password) {
+      setErrors('Enter valid password');
       return;
     }
-    if(!isNameValid || !name.trim() || name.length>20){
-      setRegisterFormData({...registerFormData, error: "Enter a valid name"});
+
+    if (!isValid.name) {
+      setErrors('Enter a valid name');
       return;
     }
-    if(!isUsernameValid){
-      setRegisterFormData({...registerFormData, error: "Enter a valid username"});
+
+    if (!isValid.username) {
+      setErrors('Enter a valid username');
       return;
     }
-    if(password!==confirmPassword){
-      setRegisterFormData({...registerFormData, error: "Passwords do not match"});
+
+    if (password !== confirmPassword) {
+      setErrors('Passwords do not match');
       return;
     }
+
     setLoading(true);
-    const res = await register(username, password, name);
-    if(res){
-      setRegisterFormData({...registerFormData, error: res});
-      return;
+    try {
+      const error = await register(username, password, name);
+      if (error) {
+        setErrors(error);
+        return;
+      }
+      setErrors('Redirecting to login...');
+      setTimeout(() => navigation.navigate("Login"), 1500);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    setRegisterFormData({...registerFormData, error: "Redirecting to login..."});
-    setTimeout(()=>{
-        navigation.navigate("Login")
-    }, 1500);
-  };
+  }, [values, isValid, register, navigation]);
 
-  const navigateLogin = () => {
-    navigation.navigate("Login");
-  };
+  if (loading) return <Loader />;
 
   return (
-    <>
-      {loading && (
-        <Loader/>
-      )}
-      {!loading && (
-        <View className="items-center">
-          <Text style={{color: colors.text}} className="text-4xl absolute m-3 self-start">Register</Text>
-          <View className="w-2/3 h-full justify-center items-center">
-          <TextInput
-              className="border rounded-md w-full mb-4"
-              style={{color: colors.text}}
-              placeholder="Name"
-              placeholderTextColor={colors.text}
-              value={name}
-              onChangeText={text => validateName(text)}
-            />
-            <TextInput
-              className="border rounded-md w-full mb-4"
-              style={{color: colors.text}}
-              placeholder="Username"
-              placeholderTextColor={colors.text}
-              value={username}
-              onChangeText={text => validateUsername(text)}
-            />
-            <TextInput
-              className="border rounded-md w-full mb-4"
-              style={{color: colors.text}}
-              placeholder="Password"
-              placeholderTextColor={colors.text}
-              value={password}
-              onChangeText={text => validatePassword(text)}
-              secureTextEntry={true}
-            />
-            <TextInput
-              className="border rounded-md w-full mb-5"
-              style={{color: colors.text}}
-              placeholder="Confirm Password"
-              placeholderTextColor={colors.text}
-              value={confirmPassword}
-              onChangeText={text => comparePasswords(text)}
-              secureTextEntry={true}
-            />
-            <TouchableOpacity
-              className="border rounded-md w-2/3 p-2 items-center"
-              onPress={!loading && submitCredentials}>
-              <Text style={{color: colors.text}}>Submit</Text>
-            </TouchableOpacity>
-            <Text style={{color: colors.text}}>
-              Login Instead?{' '}
-            </Text>
-              <TouchableOpacity onPress={navigateLogin}>
-                <Text className='text-blue-700'>Login</Text>
-              </TouchableOpacity>
-            <Text className="text-red-500">{error}</Text>
-          </View>
-        </View>
-      )}
-    </>
+    <View className="items-center" style={{paddingTop: insets.top}}>
+      <Text className={`${text.primary.tailwind} text-4xl absolute self-start mx-3 my-6`}>
+        Register
+      </Text>
+      <View className="w-2/3 h-full justify-center items-center">
+        <TextInput
+          className={`${text.primary.tailwind} border rounded-md w-full mb-4`}
+          placeholder="Name"
+          placeholderTextColor={text.primary.hex}
+          value={values.name}
+          onChangeText={text => handleChange('name', text)}
+        />
+        <TextInput
+          className={`border rounded-md w-full mb-4 ${text.primary.tailwind}`}
+          placeholder="Username"
+          placeholderTextColor={text.primary.hex}
+          value={values.username}
+          onChangeText={text => handleChange('username', text)}
+        />
+        <TextInput
+          className={`border rounded-md w-full mb-4 ${text.primary.tailwind}`}
+          placeholder="Password"
+          placeholderTextColor={text.primary.hex}
+          value={values.password}
+          onChangeText={text => handleChange('password', text)}
+          secureTextEntry={true}
+        />
+        <TextInput
+          className={`border rounded-md w-full mb-5 ${text.primary.tailwind}`}
+          placeholder="Confirm Password"
+          placeholderTextColor={text.primary.hex}
+          value={values.confirmPassword}
+          onChangeText={text => handleChange('confirmPassword', text)}
+          secureTextEntry={true}
+        />
+        <TouchableOpacity
+          className="border rounded-md w-2/3 p-2 items-center"
+          onPress={handleSubmit}>
+          <Text className={`${text.primary.tailwind}`}>Submit</Text>
+        </TouchableOpacity>
+        <Text className={`${text.primary.tailwind}`}>
+          Login Instead?{' '}
+        </Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+          <Text className={`${text.accent.tailwind}`}>Login</Text>
+        </TouchableOpacity>
+        <Text className="text-red-500">{errors}</Text>
+      </View>
+    </View>
   );
 }
 
