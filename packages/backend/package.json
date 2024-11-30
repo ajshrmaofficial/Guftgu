@@ -6,7 +6,8 @@
   "private": "true",
   "scripts": {
     "dev:backend": "nodemon index.js",
-    "start:backend": "node index.js"
+    "start:backend": "node index.js",
+    "local:backend": "docker compose up"
   },
   "author": "Ajay Sharma",
   "license": "ISC",
