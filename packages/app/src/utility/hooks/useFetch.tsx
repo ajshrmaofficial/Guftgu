@@ -1,55 +1,42 @@
 import { useEffect } from "react";
-// import server from "../api/axiosConfig";
-// import useUserStore from "../store/userStore";
 import { useQuery } from "@tanstack/react-query";
 import { fetchFriendsApiFn, fetchMessagesApiFn } from "../api/endpointFunctions";
+import { saveChatToDB, updateFriendListInDB } from "../dbModel/db";
 
-function useFetchUserData(){
 
-    // const username = useUserStore(state => state.username);
-    // const authToken = useUserStore(state => state.authToken);
-    const messagesQuery = useQuery({queryKey: ['undeliveredMessages'], queryFn: fetchMessagesApiFn});
-    const friendListQuery = useQuery({queryKey: ['friendList'], queryFn: fetchFriendsApiFn});
+// CAUTION: This hook is no longer used in the application
+// This hook was used to fetch offline data from the database
+function useFetchOfflineData(){
+
+    const messagesQuery = useQuery({queryKey: ['undeliveredMessages'], queryFn: fetchMessagesApiFn, retry: 2});
+    const friendListQuery = useQuery({queryKey: ['friendList'], queryFn: fetchFriendsApiFn, retry: 2});
     
     useEffect(()=>{
+        if(messagesQuery.error){
+            console.log('useFetch error, messages: ',messagesQuery.error);
+        }
+
+        if(friendListQuery.error){
+            console.log('useFetch error, friendList: ',friendListQuery.error);
+        }
+
         if(messagesQuery.data){
-            console.log(messagesQuery.data);
+            if(messagesQuery.data.length === 0){
+                return;
+            }
+            messagesQuery.data.forEach((message: any) => {
+                saveChatToDB(message.receiver, 'me', message.message);
+            })
         }
+
         if(friendListQuery.data){
-            console.log(friendListQuery.data);
+            if(friendListQuery.data.length === 0){
+                return;
+            }
+            updateFriendListInDB(friendListQuery.data);
         }
-    }, [])
 
-    // useEffect(()=>{
-    //     if(!authToken || !username){
-    //         return;
-    //     }
-    //     const config = {
-    //         headers: {
-    //             Authorization: `Bearer ${authToken}`
-    //         }
-    //     }
-    //     const fetchMessages = async() => {
-    //         try {
-    //             const messages = await server.post('/user/fetchUndeliveredMessages', {receiverUsername: username}, config);
-    //             console.log(messages.data);
-    //         } catch (error) {
-    //             console.log(error);
-    //         }
-    //     }
-
-    //     const fetchFriends = async() => {
-    //         try {
-    //             const friends = await server.post('/user/fetchFriendList', {username}, config);
-    //             console.log(friends.data);
-    //         } catch (error) {
-    //             console.log(error);
-    //         }
-    //     }
-
-    //     fetchMessages();
-    //     fetchFriends();
-    // }, [authToken, username])
+    }, [messagesQuery, friendListQuery])
 }
 
-export default useFetchUserData
+export default useFetchOfflineData
