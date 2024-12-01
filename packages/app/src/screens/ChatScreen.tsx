@@ -12,8 +12,8 @@ import {AppNavigationProps} from '../utility/navigation/NavigationStackTypes';
 import {FlashList} from '@shopify/flash-list';
 import { MessageType } from '../utility/definitionStore'
 import useUserStore from '../utility/store/userStore';
-import { useSocketEvents } from '../utility/socket/useSocketEvents';
-import { chatPersonalEmit, chatPersonalEvent } from '../utility/socket/socketEvents';
+// import { useSocketEvents } from '../utility/socket/useSocketEvents';
+import { chatPersonalEmit } from '../utility/socket/socketEvents';
 import getThemeColors from '../utility/theme';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -119,7 +119,7 @@ function ChatScreen({
     }
   };
 
-  useSocketEvents([chatPersonalEvent]);
+  // useSocketEvents([chatPersonalEvent]);
 
   return (
     <KeyboardAvoidingView 
