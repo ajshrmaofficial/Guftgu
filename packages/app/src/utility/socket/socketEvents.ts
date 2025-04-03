@@ -60,7 +60,9 @@ export const connectionErrorEvent: socketEvent = {
     }
 }
 
-export function chatGroupEmit<T>(data: T){}
+export function chatGroupEmit<T>(data: T){
+    chatSocket.emit('chat:group', data);
+}
 
 export const chatGroupEvent: socketEvent = {
     name: 'chat:group',

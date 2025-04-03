@@ -16,7 +16,9 @@ import useUserStore from '../utility/store/userStore';
 import { chatPersonalEmit } from '../utility/socket/socketEvents';
 import getThemeColors from '../utility/theme';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { pick, types } from 'react-native-document-picker';
 
 function ChatScreen({
   navigation,
@@ -30,6 +32,7 @@ function ChatScreen({
   const [currMessage, setCurrMessage] = useState<string>('');
   const [chatPage, setChatPage] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [documentsArr, setDocumentsArr] = useState<any[]>([]);
   const PAGE_SIZE = 10;
   const {background, text} = getThemeColors();
   const insets = useSafeAreaInsets();
@@ -78,7 +81,6 @@ function ChatScreen({
 
     return () => {
       unsubscribe();
-      updateChatEntry();
     };
   }, [navigation, friendUsername, friendName, messages]);
 
@@ -121,6 +123,59 @@ function ChatScreen({
 
   // useSocketEvents([chatPersonalEvent]);
 
+  const openDocumentPicker = async() => {
+    try {
+      const res = await pick({
+        type: [types.allFiles],
+        mode: 'open',
+        allowMultiSelection: true
+      });
+      if (res) {
+        setDocumentsArr(res);
+      }
+    } catch (error) {
+      console.error('Document picker error:', error);
+    }
+  }
+
+  const DocumentList = ({documents}: {documents: any[]}) => {
+    const trimDocName = (docName: string, trimLen: number) => {
+      // If docname is greater than 40 characters, trim it from the middle e.g "Hello World.pdf" => "Hel...rld.pdf"
+      if(docName.length > trimLen){
+        const halfLen = trimLen / 2;
+        return docName.slice(0, halfLen - 2) + '...' + docName.slice(docName.length - halfLen + 1);
+      }
+      return docName;
+    }
+    return(
+      <>
+        {
+          documents.length > 0 && (
+            <View className={`${background.card.tailwind} p-2 rounded-xl`}> 
+              {documents.map((doc, index) => (
+                <View key={index} className={`flex-row items-center justify-between h-10 mt-1 px-2 rounded-xl ${background.primary.tailwind}`}>
+                  <View className='flex-row gap-1 items-center'>
+                    <FontAwesomeIcon name={doc.type === 'application/pdf' ? 'file-pdf-o' : doc.type === 'image/jpeg' ? 'image' : 'description'
+                    } size={16} color={text.primary.hex}/>
+                    <View className='flex-row items-center'>
+                      <Text className={`${text.primary.tailwind} text-sm mr-2`}>{trimDocName(doc.name, 30)}</Text>
+                      <Text className={`${text.secondary.tailwind} text-xs`}>{(doc.size / (1024*1024)).toFixed(2)}MB</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity onPress={()=>setDocumentsArr(
+                    documents.filter((_, i) => i !== index)
+                  )}>
+                    <Icon name='cancel' size={18} color={text.primary.hex}/>
+                  </TouchableOpacity>
+                </View>
+                ))}
+            </View>
+          )
+        }
+      </>
+    )
+  }
+
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -151,19 +206,24 @@ function ChatScreen({
           keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
         />
+        <DocumentList documents={documentsArr} />
         <View className="flex-row items-center justify-between w-full px-4 py-2">
-          <TextInput
-            placeholder="Message"
-            placeholderTextColor={text.secondary.hex}
-            className={`rounded-2xl w-11/12 p-2 text-sm ${background.card.tailwind} ${text.primary.tailwind}`}
-            value={currMessage}
-            onChangeText={text => setCurrMessage(text)}
-            multiline={true}
-            returnKeyType='none'
-            />
+          <View className={`rounded-2xl w-11/12 ${background.card.tailwind} flex-row items-center justify-between`}>
+            <TextInput
+              placeholder="Message"
+              placeholderTextColor={text.secondary.hex}
+              className={` ${text.primary.tailwind} text-sm w-10/12`}
+              value={currMessage}
+              onChangeText={text => setCurrMessage(text)}
+              multiline={true}
+              returnKeyType='none'
+              />
+            <TouchableOpacity onPress={openDocumentPicker} className='mx-2'>
+              <Icon name='attach-file' size={24} color={text.primary.hex}/>
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity
-            onPress={sendMessage}
-            className="p-2 rounded-2xl justify-center">
+            onPress={sendMessage}>
             <Icon name='send' size={24} color={text.primary.hex}/>
           </TouchableOpacity>
         </View>

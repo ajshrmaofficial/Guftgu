@@ -1,6 +1,6 @@
 import {BottomSheetModal, BottomSheetTextInput, TouchableOpacity} from '@gorhom/bottom-sheet';
 import React, {useEffect, useRef} from 'react';
-import {FlatList, Text, View} from 'react-native';
+import {FlatList, Image, Text, View} from 'react-native';
 // import SearchIcon from '../../assets/svg/search.svg';
 import Loader from './utility/Loader';
 import {withBottomSheet} from './utility/BottomSheet';
@@ -11,6 +11,7 @@ import { addFriendRequestToDB, getFriendListFromDB, updateFriendEntryInDB } from
 import { friendRequestAcceptEmit, friendRequestSendEmit } from '../utility/socket/socketEvents';
 import { acceptFriendRequestApiFn, searchUserApiFn, sendFriendRequestApiFn } from '../utility/api/endpointFunctions';
 import getThemeColors from '../utility/theme';
+import ProfilePic from './utility/ProfilePic';
 export type Ref = BottomSheetModal;
 
 function AddFriendModalComponent({navigation, bottomModalRef}: {navigation?:any, bottomModalRef: React.RefObject<BottomSheetModal>}) {
@@ -99,13 +100,11 @@ function AddFriendModalComponent({navigation, bottomModalRef}: {navigation?:any,
         }
     return(
       <TouchableOpacity onPress={onTilePress}>
-      <View className='flex-row justify-between items-center mb-3 p-2'>
-        <View className='flex-row items-center gap-2'>
-          <View className='h-12 w-12 rounded-full border border-gray-900'/>
-          <View>
-            <Text className={`${text.primary.tailwind}`}>{friend.name}</Text>
-            <Text className={`${text.secondary.tailwind}`}>@{friend.username}</Text>
-          </View>
+      <View className='flex-row items-center mb-3'>
+        <ProfilePic username={friend.username}/>
+        <View className='flex-1'>
+          <Text className={`${text.primary.tailwind}`}>{friend.name}</Text>
+          <Text className={`${text.secondary.tailwind}`}>@{friend.username}</Text>
         </View>
         {friend.status!=='accepted' && <TouchableOpacity onPress={onIconPress}>
           <Icon name={iconName} size={24} color={icons.accent.hex} />

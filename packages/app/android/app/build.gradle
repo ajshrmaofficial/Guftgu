@@ -114,6 +114,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode getNumericVersionFromNpm()
         versionName getVersionFromNpm()
+        vectorDrawables.useSupportLibrary = true
     }
     signingConfigs {
         debug {
@@ -153,6 +154,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
     implementation("com.facebook.react:flipper-integration")
     implementation project(':watermelondb-jsi')
+    implementation project(':react-native-fs')
     // implementation platform('com.google.firebase:firebase-bom:33.6.0')
     // implementation("com.google.firebase:firebase-analytics")
 

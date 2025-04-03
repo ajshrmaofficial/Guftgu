@@ -10,6 +10,7 @@ import { useSocketEvents } from '../utility/socket/useSocketEvents';
 import { getChatListFromDB } from '../utility/dbModel/db';
 import getThemeColors from '../utility/theme';
 import { useNotifications } from '../utility/hooks/useNotification';
+import ProfilePic from '../components/utility/ProfilePic';
 // import useLocation from '../utility/hooks/useLocation';
 
 interface ChatListItemType{
@@ -73,7 +74,7 @@ function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
   //       // setState(setFriendLocations({location, fromUsername}));
   //     },
   //   },
-  useSocketEvents([connectionEvent, connectionErrorEvent, friendRequestAcceptedEvent, friendRequestReceivedEvent, chatPersonalEvent]);
+  useSocketEvents([connectionEvent, connectionErrorEvent, friendRequestAcceptedEvent, friendRequestReceivedEvent, chatPersonalEvent, ]);
 
   const openChat = (friendUsername: string, friendName: string) => {
     navigation.navigate("ChatScreen", {username: friendUsername, name: friendName});
@@ -85,7 +86,7 @@ function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
       <View className='min-h-screen items-center justify-center'>
         <Text className='text-black font-semibold text-base'>Looking very empty...</Text>
         <TouchableOpacity>
-          <Text className='text-blue-700 font-semibold'>
+          <Text className={`${text.accent.tailwind} font-semibold`}>
             Start a new chat
           </Text>
         </TouchableOpacity>
@@ -105,14 +106,14 @@ function Guftgu({navigation}: AppNavigationProps): React.JSX.Element {
       <FlashList contentContainerStyle={{paddingTop: 16}} data={ChatList} estimatedItemSize={70} ListEmptyComponent={EmptyChatComponent} renderItem={({item})=>(
         <TouchableOpacity onPress={()=>openChat(item.username, item.name)} className='w-full items-center mb-4'>
           <View className='w-11/12 flex-row'>
-            <View className='h-12 w-12 border rounded-full mr-2'/>
+            <ProfilePic username={item.username}/>
             <View className='flex-grow'>
               <View className='flex-row justify-between'>
                 <Text className={`text-base ${text.primary.tailwind}`}>{item.name}</Text>
                 <Text className={`${text.secondary.tailwind} text-xs font-medium`}>{trimDate(item.updatedAt)}</Text>
               </View>
               <View>
-                <Text className={`${text.secondary.tailwind} text-sm font-medium`}>{trimMessage(item.lastMessage)}</Text>
+                <Text className={`${text.secondary.tailwind} text-sm font-medium`}>{trimMessage(item.lastMessage) || 'No messages yet'}</Text>
               </View>
             </View>
           </View>

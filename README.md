@@ -1,21 +1,67 @@
-## Guftgu
+# Guftgu
 
-Welcome to the collaborative hub for building Guftgu, a chat app designed to foster meaningful connections and conversations.
+Welcome to the Guftgu project! This monorepo contains three parts: web, app, and backend.
 
-This monorepo houses the code bases for all facets of Guftgu's development:
+## Overview
 
-* **Frontend:** Built with ReactJS for a seamless web experience.
-* **Android App:** React Native powers a native-feeling Android app.
-* **Backend:** NodeJS serves as the robust foundation, enhanced by technologies like Socket.IO and Redis for real-time communication and efficient data handling.
+- **Web**: Deprecated and not maintained.
+- **App**: Built with React Native.
+- **Backend**: Built with Node.js.
 
-### Key Features:
+## Getting Started
 
-* **Real-time Chat:** Engage in fluid conversations with instant message delivery.
-* **Cross-Platform Compatibility:** Connect seamlessly across web and Android devices.
-* **Scalable Architecture:** Supports growth and expansion with ease.
+### Prerequisites
 
-We invite you to join the development journey! Contributions are warmly welcomed. Explore the code, raise issues, suggest enhancements, and help us create a vibrant chat experience.
+- Node.js (>= 18)
+- Yarn (recommended)
 
-**Let's build Guftgu together—where conversations flow freely.**
+### Installation
 
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/yourusername/guftgu.git
+    cd guftgu
+    ```
 
+2. Install dependencies:
+    ```bash
+    yarn install
+    ```
+
+### Running the App
+
+1. Start the Metro server:
+    ```bash
+    yarn start:rn
+    ```
+
+2. Run the app on Android:
+    ```bash
+    yarn android
+    ```
+
+3. Run the app on iOS:
+    ```bash
+    yarn ios
+    ```
+
+### Running the Backend
+
+1. Start the backend server:
+    ```bash
+    yarn start:backend
+    ```
+
+## Project Structure
+
+- `packages/web`: Deprecated web part.
+- `packages/app`: React Native app.
+- `packages/backend`: Node.js backend.
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
+
+## License
+
+This project is licensed under the ISC License.

@@ -16,6 +16,7 @@ class FriendModel extends Model {
   @text('name') name;
   @text('status') status;
   @text('party') party;
+  @text('profile_pic') profilePic;
 }
 
 class MessageModel extends Model {

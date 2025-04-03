@@ -5,4 +5,6 @@ includeBuild('../node_modules/@react-native/gradle-plugin')
 include ':watermelondb-jsi'
 project(':watermelondb-jsi').projectDir =
     new File(rootProject.projectDir, '../node_modules/@nozbe/watermelondb/native/android-jsi')
-    
+include ':react-native-fs'
+project(':react-native-fs').projectDir = 
+    new File(settingsDir, '../node_modules/react-native-fs/android')

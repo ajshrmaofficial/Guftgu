@@ -6,6 +6,7 @@ interface UserState{
     authToken: string | null
     username: string | null
     name: string | null
+    profilePic: string | null
     myLocation: MyLocation | null
     error: unknown | null
     fcmToken: string | null
@@ -16,6 +17,7 @@ interface UserStateSetter{
     setAuthToken: (authToken: string) => void
     setUsername: (username: string) => void
     setName: (name: string) => void
+    setProfilePic: (profilePic: string) => void
     setMyLocation: (myLocation: MyLocation) => void
     setFCMToken: (fcmToken: string) => void
 }
@@ -27,11 +29,13 @@ const useUserStore = create<UserState & UserStateSetter>()((set)=>({
     error: null,
     username: null,
     name: null,
+    profilePic: null,
     myLocation: null,
     fcmToken: null,
     setAuthToken: (authToken) => set((state) => ({authToken: authToken})),
     setUsername: (username) => set((state) => ({username: username})),
     setName: (name) => set((state) => ({name: name})),
+    setProfilePic: (profilePic) => set((state) => ({profilePic: profilePic})),
     setMyLocation: (myLocation) => set((state) => ({myLocation: myLocation})),
     setFCMToken: (fcmToken) => set((state) => ({fcmToken: fcmToken})),
     fetchUser: async () => {
@@ -39,8 +43,9 @@ const useUserStore = create<UserState & UserStateSetter>()((set)=>({
             const authToken = await AsyncStorage.getItem('authToken');
             const username = await AsyncStorage.getItem('username');
             const name = await AsyncStorage.getItem('name');
+            const profilePic = await AsyncStorage.getItem('profilePic');
             const fcmToken = await AsyncStorage.getItem('fcmToken');
-            set({authToken, username, name, error: null, fcmToken}); 
+            set({authToken, username, name, profilePic, error: null, fcmToken}); 
         } catch (error) {
             set({error})
         }

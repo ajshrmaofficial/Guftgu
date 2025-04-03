@@ -15,7 +15,7 @@ const database = new Database({
   modelClasses: [FriendModel, MessageModel, ChatListModel],
 });
 
-const saveChatToDB = async (senderUsername, receiverUsername, messageText) => {
+export const saveChatToDB = async (senderUsername, receiverUsername, messageText) => {
   const messageCollection = database.collections.get('messages');
 
   await database.write(async () => {
@@ -28,7 +28,7 @@ const saveChatToDB = async (senderUsername, receiverUsername, messageText) => {
   });
 };
 
-const getChatsFromDB = (otherUsername, page, pageSize) => {
+export const getChatsFromDB = (otherUsername, page, pageSize) => {
   return database.collections.get('messages')
   .query(
     Q.unsafeSqlQuery(
@@ -37,7 +37,7 @@ const getChatsFromDB = (otherUsername, page, pageSize) => {
   )
 }
 
-const searchChatsFromDB = (searchText) => {
+export const searchChatsFromDB = (searchText) => {
   return database.collections.get('messages')
   .query(
     Q.unsafeSqlQuery(
@@ -46,14 +46,14 @@ const searchChatsFromDB = (searchText) => {
   ).fetch();
 }
 
-const getFriendListFromDB = () => {
+export const getFriendListFromDB = () => {
   return database.collections.get('friends')
   .query(
     Q.where('status', Q.notEq('blocked'))
   )
 }
 
-const updateFriendListInDB = async (newFriendList) => {
+export const updateFriendListInDB = async (newFriendList) => {
   const friendCollection = database.collections.get('friends');
 
   try {
@@ -117,7 +117,7 @@ const updateFriendListInDB = async (newFriendList) => {
   }
 }
 
-const addFriendRequestToDB = async (friendUsername, friendName, party='2') => {
+export const addFriendRequestToDB = async (friendUsername, friendName, party='2') => {
   const friendCollection = database.collections.get('friends');
 
   await database.write(async () => {
@@ -131,7 +131,7 @@ const addFriendRequestToDB = async (friendUsername, friendName, party='2') => {
   });
 }
 
-const updateFriendEntryInDB = async (friendUsername, status) => {
+export const updateFriendEntryInDB = async (friendUsername, status) => {
   const friendCollection = database.collections.get('friends');
 
   await database.write(async () => {
@@ -146,7 +146,7 @@ const updateFriendEntryInDB = async (friendUsername, status) => {
   });
 }
 
-const getChatListFromDB = () => {
+export const getChatListFromDB = () => {
   return database.collections.get('chatList')
   .query(
     Q.unsafeSqlQuery(
@@ -155,7 +155,7 @@ const getChatListFromDB = () => {
   )
 }
 
-const updateChatEntryInDB = async (username, name, lastMessage) => {
+export const updateChatEntryInDB = async (username, name, lastMessage) => {
   const chatCollection = database.collections.get('chatList');
   console.log('Updating chat entry:', username, name, lastMessage);
   await database.write(async () => {
@@ -187,4 +187,19 @@ const updateChatEntryInDB = async (username, name, lastMessage) => {
   });
 }
 
-export {saveChatToDB, getChatsFromDB, getFriendListFromDB, updateFriendListInDB, addFriendRequestToDB, updateFriendEntryInDB, getChatListFromDB, updateChatEntryInDB, searchChatsFromDB};
+export const updateFriendProfilePicInDB = async (friendUsername, profilePic, extension) => {
+  const friendCollection = database.collections.get('friends');
+
+  await database.write(async () => {
+    const friend = await friendCollection.query(Q.where('username', friendUsername)).fetch();
+    if (friend.length !== 1) {
+      throw new Error('Friend not found');
+    } else {
+      await friend[0].update(friend => {
+        friend.profilePic = profilePic;
+        friend.profilePicExtension = extension;
+      })
+    }
+  });
+}
+
