@@ -4,9 +4,9 @@ const server = express();
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 // const { sessionMiddleware, redisClient } = require("./auth/sessionManager");
-const {authRouter, socketHandler} = require("./handlers");
-const {connectMongoose} = require("./schema");
-const {userRouter} = require("./handlers");
+const { authRouter, socketHandler } = require("./handlers");
+const { connectMongoose } = require("./schema");
+const { userRouter } = require("./handlers");
 // const {userModel} = require("./schema");
 // const { firebase } = require("./utils/firebase");
 
@@ -82,3 +82,8 @@ const startServer = async () => {
 };
 
 startServer();
+
+httpServer.listen(process.env.PORT, () => {
+  console.log(`Server is running on port ${process.env.PORT}`);
+});
+
