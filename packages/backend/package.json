@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "Backend of Guftgu chat app",
   "main": "index.js",
-  "private": "true",
   "scripts": {
     "dev:backend": "nodemon index.js",
     "start:backend": "node index.js",
@@ -29,5 +28,6 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
-  }
+  },
+  "packageManager": "yarn@4.9.1"
 }
