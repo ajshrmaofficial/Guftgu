@@ -1,4 +1,4 @@
-package com.guftgu
+package xyz.ajaysharma.guftgu
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

@@ -1,5 +1,5 @@
 import ImageCropPicker, { Options, Image, Video } from "react-native-image-crop-picker";
-import { pick, types, DocumentPickerResponse } from 'react-native-document-picker';
+import { pick, types, DocumentPickerResponse } from '@react-native-documents/picker';
 
 interface MediaPickerOptions {
   mediaType?: 'photo' | 'video' | 'document' | 'any';

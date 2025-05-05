@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:241493577044:android:d32f62cdbd29e246c50cc1",
+        "mobilesdk_app_id": "1:241493577044:android:a1fe15c26d5bf747c50cc1",
         "android_client_info": {
-          "package_name": "com.guftgu"
+          "package_name": "xyz.ajaysharma.guftgu"
         }
       },
       "oauth_client": [],

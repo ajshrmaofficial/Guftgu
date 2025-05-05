@@ -18,7 +18,7 @@ import getThemeColors from '../utility/theme';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { pick, types } from 'react-native-document-picker';
+import { pick, types } from '@react-native-documents/picker';
 
 function ChatScreen({
   navigation,
