@@ -28,7 +28,7 @@
       </activity>
       <meta-data
         android:name="com.google.android.geo.API_KEY"
-        android:value="AIzaSyAWkNJiJoYfyNGfie3r6muGA8KcaHFVV-k"/>
+        android:value="AIzaSyAzP5sb4QyvHeTb7ABRx7ig6e94QLeDhXc"/>
       <meta-data 
         android:name="com.google.firebase.messaging.default_notification_icon" 
         android:resource="@drawable/ic_stat_name"/>

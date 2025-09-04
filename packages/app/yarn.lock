@@ -6975,7 +6975,7 @@ __metadata:
     react-native-gesture-handler: "npm:^2.25.0"
     react-native-image-crop-picker: "npm:^0.42.0"
     react-native-linear-gradient: "npm:^2.8.3"
-    react-native-maps: "npm:^1.22.6"
+    react-native-maps: "npm:^1.26.1"
     react-native-reanimated: "npm:^3.17.5"
     react-native-safe-area-context: "npm:^5.4.0"
     react-native-screens: "npm:^4.10.0"
@@ -10138,9 +10138,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-maps@npm:^1.22.6":
-  version: 1.22.6
-  resolution: "react-native-maps@npm:1.22.6"
+"react-native-maps@npm:^1.26.1":
+  version: 1.26.1
+  resolution: "react-native-maps@npm:1.26.1"
   dependencies:
     "@types/geojson": "npm:^7946.0.13"
   peerDependencies:
@@ -10150,7 +10150,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-web:
       optional: true
-  checksum: 10c0/5fc48fe7a4c86576fb16c4716e8674710bbf42dd8bb40d86fdf50e8a4f385708ad6a15ce6c640587d8903688c472846de0f92c8ca44d26ad5e2d6551614148fb
+  checksum: 10c0/185c2da0f7f4c54506b5bda5a55cbe58d274f127710c43c3565542cc952fc83169b0385b1067d82ced3399ddd40fc072be2e26d54ebfe42c186a3021a323ed42
   languageName: node
   linkType: hard
 
